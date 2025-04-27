@@ -2,6 +2,8 @@
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?output=csv"; // Driver sheet (CSV download)
 const webAppUrl = "https://script.google.com/macros/s/AKfycbwKrmawcfmLnDpRp6rg5OB62pFB1NiBwjP4JGNp1hE7VN560hrNUffM15Iab_B02jzsng/exec"; // Web App URL
 
+const driverTeams = {}; // <--- Added globally here
+
 // Populate Drivers
 document.addEventListener('DOMContentLoaded', populateDriverDropdown);
 
@@ -125,7 +127,6 @@ async function loadStandings() {
       const rows = data.split("\n").slice(1).map(row => row.split(",")); // Skip header
   
       const driverPoints = {};
-      const driverTeams = {};
   
       rows.forEach(row => {
         const driver = row[2]?.replace(/"/g, '').trim(); // Driver Name
@@ -174,12 +175,14 @@ async function loadStandings() {
   // Render Driver Standings Table
   function renderDriverStandings(sortedDrivers) {
     const container = document.getElementById("driver-standings");
-    let html = "<table><tr><th>Rank</th><th>Driver</th><th>Points</th></tr>";
+    let html = "<table><tr><th>Rank</th><th>Driver</th><th>Team</th><th>Points</th></tr>";
   
     sortedDrivers.forEach(([driver, points], index) => {
+      const team = driverTeams[driver] || "Unknown Team";
       html += `<tr>
         <td>${index + 1}</td>
         <td>${driver}</td>
+        <td>${team}</td>
         <td>${points}</td>
       </tr>`;
     });
@@ -207,4 +210,3 @@ async function loadStandings() {
   
   // NEW: Define Race Results Sheet URL
   const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv"; // <-- SET this correctly
-  
