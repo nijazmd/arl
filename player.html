@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Driver Details</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <a href="index.html" class="back-button">← Back</a>
+    <h1 id="driver-name">Loading...</h1>
+    <a href="player.html?driver=John%20Doe">John Doe</a>
+
+    <div class="table-wrapper">
+      <table id="race-results">
+        <thead>
+          <tr>
+            <th>Race No</th>
+            <th>Race Level</th>
+            <th>Car</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Race rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
