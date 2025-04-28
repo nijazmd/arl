@@ -6,26 +6,30 @@ body {
   font-family: 'Rajdhani', sans-serif;
   background-color: #0d0b1a;
   color: #e0e0e0;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  align-items: flex-start;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* Headings */
 h1, h2, h3 {
   color: #00bfff;
   margin: 20px 0 10px 20px;
-  text-align: left;
+  font-size: 24px;
 }
 
 /* Containers */
 #content, #driver-table-container, #driver-details-container {
   padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Tables */
 table {
+  min-width: 600px; /* Don't shrink below this */
   width: 100%;
   border-collapse: collapse;
   background-color: #1a1830;
@@ -34,6 +38,13 @@ table {
   margin-top: 20px;
 }
 
+.table-container, 
+#driver-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Table Head */
 thead {
   background-color: #252343;
 }
@@ -48,6 +59,7 @@ tbody tr:hover {
   background-color: #2d2a4d;
 }
 
+/* Links */
 a {
   color: #00bfff;
   text-decoration: none;
@@ -58,20 +70,20 @@ a:hover {
   text-shadow: 0 0 8px #00bfff;
 }
 
-/* Driver Single Page Details */
+/* Driver Single Page */
 #driver-details-container {
-  width: 100%;
-  max-width: 1000px;
-  padding: 20px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
-.driver-profile {
-  width: 100%;
+.driver-card {
+  background-color: #1a1830;
+  padding: 20px;
+  border-radius: 10px;
 }
 
 .driver-header h2, .driver-header h3 {
   margin: 0 0 10px 0;
-  text-align: left;
 }
 
 .driver-header .team-name {
@@ -82,24 +94,17 @@ a:hover {
   margin-top: 20px;
 }
 
-.driver-stats div {
+.driver-stats .stat-item {
   margin-bottom: 8px;
-  font-size: 16px;
+  font-size: 18px;
 }
 
-.stat-label {
+.stat-item span {
   color: #8ab4f8;
   margin-right: 10px;
 }
 
-.stat-value {
-  font-weight: bold;
-}
-.stat-item span {
-  color: #555;
-}
-
-/* Button */
+/* Plus Button */
 .plus-button {
   position: fixed;
   bottom: 80px;
@@ -129,7 +134,7 @@ a:hover {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 10px 0;
+  padding: 12px 0;
   border-top: 1px solid #2e2c54;
 }
 
@@ -180,7 +185,7 @@ legend {
   font-weight: 600;
 }
 
-/* Radio buttons */
+/* Radio Buttons */
 .radio-group label {
   margin-right: 15px;
 }
@@ -189,21 +194,23 @@ input[type="radio"] {
   accent-color: #00bfff;
 }
 
-/* Buttons in form */
+/* Form Buttons */
 .button-group {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .btn {
   background-color: #00bfff;
   color: #0d0b1a;
-  padding: 10px 20px;
+  padding: 12px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   text-align: center;
   font-weight: 600;
+  font-size: 16px;
   box-shadow: 0 0 10px #00bfff;
 }
 
@@ -222,39 +229,9 @@ input[type="radio"] {
   background-color: #777;
 }
 
-/* Full Page Form */
-.full-page-form {
-  padding: 20px;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 600px) {
-  h1, h2 {
-    font-size: 24px;
-  }
-  
-  table th, table td {
-    padding: 8px;
-  }
-  
-  .btn {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  .plus-button {
-    width: 50px;
-    height: 50px;
-    font-size: 28px;
-  }
-}
+/* Race History Table */
 .race-history-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.race-history-table {
+  min-width: 600px;
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
@@ -262,26 +239,55 @@ input[type="radio"] {
 
 .race-history-table th,
 .race-history-table td {
-  border: 1px solid #ddd;
+  border: 1px solid #2e2c54;
   padding: 8px;
   text-align: center;
 }
 
 .race-history-table th {
-  background-color: #333333; /* Darker background */
-  color: #ffffff; /* White text */
-  font-weight: bold;
+  background-color: #333333;
+  color: #ffffff;
 }
 
 .race-history-table tr.first-place {
-  background-color: #ffd70044; /* Light gold */
+  background-color: #ffd70044;
 }
 
 .race-history-table tr.second-place {
-  background-color: #c0c0c044; /* Light silver */
+  background-color: #c0c0c044;
 }
 
 .race-history-table tr.third-place {
-  background-color: #cd7f3244; /* Light bronze */
+  background-color: #cd7f3244;
 }
 
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  h1, h2, h3 {
+    font-size: 20px;
+  }
+
+  th, td {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .driver-stats .stat-item {
+    font-size: 16px;
+  }
+
+  .btn {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .plus-button {
+    width: 50px;
+    height: 50px;
+    font-size: 26px;
+  }
+
+  .bottom-nav a {
+    font-size: 16px;
+  }
+}
