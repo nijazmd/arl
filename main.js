@@ -289,7 +289,7 @@ function renderDriverStandings(sortedDrivers) {
     const team = driverTeams[driver] || "Unknown Team";
     html += `<tr>
       <td>${index + 1}</td>
-      <td>${driver}</td>
+      <td><a href="driver-single.html?driver=${encodeURIComponent(driver)}">${driver}</a></td>
       <td>${team}</td>
       <td>${points}</td>
     </tr>`;
@@ -298,6 +298,7 @@ function renderDriverStandings(sortedDrivers) {
   html += "</table>";
   container.innerHTML = html;
 }
+
 
 // Render Team Standings Table
 function renderTeamStandings(sortedTeams) {

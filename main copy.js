@@ -45,8 +45,10 @@ async function populateDriverDropdown() {
   
   document.addEventListener("DOMContentLoaded", () => {
     populateDriverDropdown();
-    populateCurrentRound(); // ← Add this
+    populateCurrentRound();
+    loadStandings(); // ← Add this here
   });
+  
 
   
 // Open and Close Form
@@ -114,4 +116,95 @@ function calculatePoints(position, chances) {
   
     return (pointsTable[pos] && pointsTable[pos][chance]) ? pointsTable[pos][chance] : 0;
   }
+  
+// NEW: Load Race Results and Calculate Standings
+async function loadStandings() {
+    try {
+      const response = await fetch(raceResultsSheetURL); // <-- We'll define this below
+      const data = await response.text();
+      const rows = data.split("\n").slice(1).map(row => row.split(",")); // Skip header
+  
+      const driverPoints = {};
+      const driverTeams = {};
+  
+      rows.forEach(row => {
+        const driver = row[2]?.replace(/"/g, '').trim(); // Driver Name
+        const points = parseInt(row[6], 10); // Points
+        const round = row[7]?.replace(/"/g, '').trim(); // Round Number (optional)
+        
+        if (!driver || isNaN(points)) return;
+  
+        if (!driverPoints[driver]) driverPoints[driver] = 0;
+        driverPoints[driver] += points;
+      });
+  
+      // Now fetch Driver-Team mapping from Drivers sheet
+      const driverResponse = await fetch(sheetURL);
+      const driverData = await driverResponse.text();
+      const driverRows = driverData.split("\n").slice(1);
+      driverRows.forEach(row => {
+        const cols = row.split(",");
+        const driverName = cols[0]?.replace(/"/g, '').trim();
+        const teamName = cols[1]?.replace(/"/g, '').trim();
+        if (driverName && teamName) {
+          driverTeams[driverName] = teamName;
+        }
+      });
+  
+      // Team points = sum of their drivers
+      const teamPoints = {};
+      for (const [driver, points] of Object.entries(driverPoints)) {
+        const team = driverTeams[driver] || "Unknown Team";
+        if (!teamPoints[team]) teamPoints[team] = 0;
+        teamPoints[team] += points;
+      }
+  
+      // Sort drivers and teams
+      const sortedDrivers = Object.entries(driverPoints).sort((a, b) => b[1] - a[1]);
+      const sortedTeams = Object.entries(teamPoints).sort((a, b) => b[1] - a[1]);
+  
+      renderDriverStandings(sortedDrivers);
+      renderTeamStandings(sortedTeams);
+  
+    } catch (error) {
+      console.error("Error loading standings:", error);
+    }
+  }
+  
+  // Render Driver Standings Table
+  function renderDriverStandings(sortedDrivers) {
+    const container = document.getElementById("driver-standings");
+    let html = "<table><tr><th>Rank</th><th>Driver</th><th>Points</th></tr>";
+  
+    sortedDrivers.forEach(([driver, points], index) => {
+      html += `<tr>
+        <td>${index + 1}</td>
+        <td>${driver}</td>
+        <td>${points}</td>
+      </tr>`;
+    });
+  
+    html += "</table>";
+    container.innerHTML = html;
+  }
+  
+  // Render Team Standings Table
+  function renderTeamStandings(sortedTeams) {
+    const container = document.getElementById("team-standings");
+    let html = "<table><tr><th>Rank</th><th>Team</th><th>Points</th></tr>";
+  
+    sortedTeams.forEach(([team, points], index) => {
+      html += `<tr>
+        <td>${index + 1}</td>
+        <td>${team}</td>
+        <td>${points}</td>
+      </tr>`;
+    });
+  
+    html += "</table>";
+    container.innerHTML = html;
+  }
+  
+  // NEW: Define Race Results Sheet URL
+  const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv"; // <-- SET this correctly
   
