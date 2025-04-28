@@ -3,66 +3,74 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Add Race Result</title>
+  <title>ARL - Add Race Result</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="content">
-    <form id="raceForm" class="form-container" onsubmit="submitRaceResult(event)">
+  <main id="content" class="full-page-form">
+    <form id="raceForm" onsubmit="submitRaceResult(event)">
       <h2>Add Race Result</h2>
 
-      <div>
+      <div class="form-group">
         <label for="roundNumber">Round Number:</label>
         <input type="number" id="roundNumber" name="roundNumber" value="1" required>
       </div>
 
-      <label for="driverName">Driver</label>
-      <select id="driverName" required>
-        <option value="">Select Driver</option>
-      </select>
-
-      <label for="carName">Car</label>
-      <select id="carName" required>
-        <option value="">Select Car</option>
-      </select>
-
-      <label for="trackName">Track</label>
-      <select id="trackName" required>
-        <option value="">Select Track</option>
-      </select>
-
-      <label>Race Level</label>
-      <div class="radio-group">
-        <label><input type="radio" name="raceLevel" value="1" required> 1</label>
-        <label><input type="radio" name="raceLevel" value="2"> 2</label>
-        <label><input type="radio" name="raceLevel" value="3"> 3</label>
-        <label><input type="radio" name="raceLevel" value="4"> 4</label>
-        <label><input type="radio" name="raceLevel" value="5"> 5</label>
+      <div class="form-group">
+        <label for="driverName">Driver</label>
+        <select id="driverName" required></select>
       </div>
 
-      <label>Chances</label>
-      <div class="radio-group">
-        <label><input type="radio" name="chances" value="1" required> 1</label>
-        <label><input type="radio" name="chances" value="2"> 2</label>
-        <label><input type="radio" name="chances" value="3"> 3</label>
-        <label><input type="radio" name="chances" value="4"> 4</label>
-        <label><input type="radio" name="chances" value="5"> 5</label>
+      <div class="form-group">
+        <label for="carName">Car</label>
+        <select id="carName" required></select>
       </div>
 
-      <label>Final Position</label>
-      <div class="radio-group">
-        <label><input type="radio" name="position" value="1" required> 1</label>
-        <label><input type="radio" name="position" value="2"> 2</label>
-        <label><input type="radio" name="position" value="3"> 3</label>
-        <label><input type="radio" name="position" value="4"> 4</label>
-        <label><input type="radio" name="position" value="5"> 5</label>
+      <div class="form-group">
+        <label for="trackName">Track</label>
+        <select id="trackName" required></select>
       </div>
 
-      <button type="submit" class="btn">Save</button>
-      <a href="index.html" class="btn cancel">Cancel</a>
+      <fieldset>
+        <legend>Race Level</legend>
+        <div class="radio-group">
+          <label><input type="radio" name="raceLevel" value="1" required> 1</label>
+          <label><input type="radio" name="raceLevel" value="2"> 2</label>
+          <label><input type="radio" name="raceLevel" value="3"> 3</label>
+          <label><input type="radio" name="raceLevel" value="4"> 4</label>
+          <label><input type="radio" name="raceLevel" value="5"> 5</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Chances</legend>
+        <div class="radio-group">
+          <label><input type="radio" name="chances" value="1" required> 1</label>
+          <label><input type="radio" name="chances" value="2"> 2</label>
+          <label><input type="radio" name="chances" value="3"> 3</label>
+          <label><input type="radio" name="chances" value="4"> 4</label>
+          <label><input type="radio" name="chances" value="5"> 5</label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Final Position</legend>
+        <div class="radio-group">
+          <label><input type="radio" name="position" value="1" required> 1</label>
+          <label><input type="radio" name="position" value="2"> 2</label>
+          <label><input type="radio" name="position" value="3"> 3</label>
+          <label><input type="radio" name="position" value="4"> 4</label>
+          <label><input type="radio" name="position" value="5"> 5</label>
+        </div>
+      </fieldset>
+
+      <div class="button-group">
+        <button type="submit" class="btn">Save</button>
+        <a href="index.html" class="btn cancel">Cancel</a>
+      </div>
     </form>
-  </div>
+  </main>
 
   <nav class="bottom-nav">
     <a href="index.html">🏠 Home</a>

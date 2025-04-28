@@ -2,8 +2,10 @@ const currentRoundNumber = 1;
 
 // CONFIG
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?output=csv"; // Driver sheet (CSV download)
-const webAppUrl = "https://script.google.com/macros/s/AKfycbwKrmawcfmLnDpRp6rg5OB62pFB1NiBwjP4JGNp1hE7VN560hrNUffM15Iab_B02jzsng/exec"; // Web App URL
+const webAppUrl = "https://script.google.com/macros/s/AKfycby4VCqbFxi-ex0NJ9XlFKlyHqbWKbnk1lcbhB6S3UApUp5ekP6kAoIeiw3rMIvdiUg43Q/exec"; // Web App URL
 const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv"; // Race Results Sheet
+const carsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2855635&single=true&output=csv"; 
+const tracksSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2013785235&single=true&output=csv"; 
 
 const driverTeams = {}; // Global map
 
@@ -49,6 +51,59 @@ async function populateDriverDropdown() {
   }
 }
 
+// 🆕 Populate Cars
+async function populateCarDropdown() {
+    try {
+      const carSelect = document.getElementById("carName");
+      if (!carSelect) return;
+  
+      const response = await fetch(carsSheetURL);
+      const data = await response.text();
+      const rows = data.split("\n").slice(1); 
+  
+      carSelect.innerHTML = '<option value="">Select Car</option>';
+      rows.forEach(row => {
+        const cols = row.split(",");
+        const carName = cols[0]?.replace(/["\r\n]/g, '').trim(); // 🛠 fixed here
+        if (carName) {
+          const option = document.createElement("option");
+          option.value = carName;
+          option.textContent = carName;
+          carSelect.appendChild(option);
+        }
+      });
+    } catch (error) {
+      console.error("Error loading cars:", error);
+    }
+  }
+  
+  // 🆕 Populate Tracks
+  async function populateTrackDropdown() {
+    try {
+      const trackSelect = document.getElementById("trackName");
+      if (!trackSelect) return;
+  
+      const response = await fetch(tracksSheetURL);
+      const data = await response.text();
+      const rows = data.split("\n").slice(1);
+  
+      trackSelect.innerHTML = '<option value="">Select Track</option>';
+      rows.forEach(row => {
+        const cols = row.split(",");
+        const trackName = cols[0]?.replace(/["\r\n]/g, '').trim(); // 🛠 fixed here
+        if (trackName) {
+          const option = document.createElement("option");
+          option.value = trackName;
+          option.textContent = trackName;
+          trackSelect.appendChild(option);
+        }
+      });
+    } catch (error) {
+      console.error("Error loading tracks:", error);
+    }
+  }
+  
+
 async function populateCurrentRound() {
   const roundInput = document.getElementById('roundNumber');
   if (roundInput) {
@@ -58,74 +113,106 @@ async function populateCurrentRound() {
 
 // Setup when page is ready
 document.addEventListener("DOMContentLoaded", () => {
-  populateDriverDropdown();
-  populateCurrentRound();
-
-  const currentRoundDisplay = document.getElementById('currentRoundDisplay');
-  if (currentRoundDisplay) {
-    currentRoundDisplay.textContent = currentRoundNumber;
-  }
-
-  const driverStandings = document.getElementById('driver-standings');
-  if (driverStandings) {
-    loadStandings(); // only load standings if this element exists
-  }
-});
+    populateDriverDropdown();
+    populateCarDropdown();
+    populateTrackDropdown();
+    populateCurrentRound();
+  
+    const currentRoundDisplay = document.getElementById('currentRoundDisplay');
+    if (currentRoundDisplay) {
+      currentRoundDisplay.textContent = currentRoundNumber;
+    }
+  
+    const driverStandings = document.getElementById('driver-standings');
+    if (driverStandings) {
+      loadStandings();
+    }
+  });
+  
 
 // Open and Close Form
 function openForm() {
-  document.getElementById("popupForm").style.display = "block";
-}
-
-function closeForm() {
-  document.getElementById("popupForm").style.display = "none";
-  document.getElementById("raceForm").reset();
-}
+    const popupForm = document.getElementById("popupForm");
+    if (popupForm) {
+      popupForm.style.display = "block";
+    } else {
+      console.warn('Popup form element not found.');
+    }
+  }
+  
+  function closeForm() {
+    const popupForm = document.getElementById("popupForm");
+    const raceForm = document.getElementById("raceForm");
+  
+    if (popupForm) {
+      popupForm.style.display = "none";
+    } else {
+      console.warn('Popup form element not found.');
+    }
+  
+    if (raceForm) {
+      raceForm.reset();
+    } else {
+      console.warn('Race form element not found.');
+    }
+  }
+  
 
 // Submit Race Result
 async function submitRaceResult(event) {
-  event.preventDefault();
-
-  const roundNumber = document.getElementById('roundNumber').value;
-  const driverName = document.getElementById('driverName').value;
-  const carSelect = document.getElementById('carName');
-  const trackSelect = document.getElementById('trackName');
-  const carName = carSelect ? carSelect.value : "";
-  const trackName = trackSelect ? trackSelect.value : "";
-  const raceLevel = document.querySelector('input[name="raceLevel"]:checked')?.value;
-  const chances = document.querySelector('input[name="chances"]:checked')?.value;
-  const position = document.querySelector('input[name="position"]:checked')?.value;
-  const points = calculatePoints(position, chances);
-
-  if (!driverName || !raceLevel || !chances || !position || !roundNumber) {
-    alert("Please fill out all required fields.");
-    return;
+    event.preventDefault();
+  
+    const roundNumber = document.getElementById('roundNumber').value;
+    const driverName = document.getElementById('driverName').value;
+    const carSelect = document.getElementById('carName');
+    const trackSelect = document.getElementById('trackName');
+    const carName = carSelect ? carSelect.value : "";
+    const trackName = trackSelect ? trackSelect.value : "";
+    const raceLevel = document.querySelector('input[name="raceLevel"]:checked')?.value;
+    const chances = document.querySelector('input[name="chances"]:checked')?.value;
+    const position = document.querySelector('input[name="position"]:checked')?.value;
+    const points = calculatePoints(position, chances);
+  
+    if (!driverName || !raceLevel || !chances || !position || !roundNumber) {
+      alert("Please fill out all required fields.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('roundNumber', roundNumber);
+    formData.append('driverName', driverName);
+    if (carName) formData.append('carName', carName);
+    if (trackName) formData.append('trackName', trackName);
+    formData.append('raceLevel', raceLevel);
+    formData.append('chances', chances);
+    formData.append('position', position);
+    formData.append('points', points);
+  
+    try {
+      await fetch(webAppUrl, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors"
+      });
+  
+      // After successful submit
+      alert("Race Result Added Successfully!");
+  
+      // Clear the form manually (in case reset didn't work)
+      const raceForm = document.getElementById('raceForm');
+      if (raceForm) {
+        raceForm.reset();
+      }
+  
+      // Close the form popup
+      closeForm();
+  
+    } catch (error) {
+      console.error("Error submitting race:", error);
+      alert("Failed to submit race result. Try again.");
+    }
   }
-
-  const formData = new FormData();
-  formData.append('roundNumber', roundNumber);
-  formData.append('driverName', driverName);
-  if (carName) formData.append('carName', carName);
-  if (trackName) formData.append('trackName', trackName);
-  formData.append('raceLevel', raceLevel);
-  formData.append('chances', chances);
-  formData.append('position', position);
-  formData.append('points', points);
-
-  try {
-    await fetch(webAppUrl, {
-      method: "POST",
-      body: formData,
-      mode: "no-cors"
-    });
-
-    alert("Race Result Added Successfully!");
-    closeForm();
-  } catch (error) {
-    console.error("Error submitting race:", error);
-    alert("Failed to submit race result. Try again.");
-  }
-}
+  
 
 // Points Calculation
 function calculatePoints(position, chances) {
