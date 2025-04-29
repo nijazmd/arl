@@ -1,6 +1,7 @@
 /* Import racing-style font */
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
 
+/* Base */
 body {
   margin: 0;
   font-family: 'Rajdhani', sans-serif;
@@ -9,8 +10,6 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  overflow-x: hidden;
 }
 
 /* Headings */
@@ -22,37 +21,82 @@ h1, h2, h3 {
 
 /* Containers */
 #content, #driver-table-container, #driver-details-container {
-  padding: 20px;
+  padding: 20px 20px 70px 20px;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Tables */
-table {
-  min-width: 600px; /* Don't shrink below this */
+/* Table Wrapper for Scroll */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+#driver-details-container {
+  width: 100%;
+  overflow-x: auto; /* Important for mobile scrolling */
+}
+
+.race-history-table {
+  min-width: 800px;
   width: 100%;
   border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.race-history-table th,
+.race-history-table td {
+  border: 1px solid #2e2c54;
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.race-history-table th {
+  background-color: #252343;
+  color: #e0e0e0;
+}
+
+.race-history-table tr.first-place {
+  background-color: #ffd70044;
+}
+
+.race-history-table tr.second-place {
+  background-color: #c0c0c044;
+}
+
+.race-history-table tr.third-place {
+  background-color: #cd7f3244;
+}
+
+@media (max-width: 600px) {
+  .race-history-table th, .race-history-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+
+/* Tables */
+table {
+  width: 100%;
+  /* min-width: 800px; */
+  border-collapse: collapse;
   background-color: #1a1830;
+  box-sizing: border-box;
   border-radius: 8px;
   overflow: hidden;
   margin-top: 20px;
 }
 
-.table-container, 
-#driver-table-container {
-  width: 100%;
-  overflow-x: auto;
-}
-
-/* Table Head */
 thead {
   background-color: #252343;
 }
 
 th, td {
-  padding: 10px 15px;
+  padding: 12px 16px;
   text-align: left;
   border-bottom: 1px solid #2e2c54;
+  font-size: 16px;
 }
 
 tbody tr:hover {
@@ -71,15 +115,12 @@ a:hover {
 }
 
 /* Driver Single Page */
-#driver-details-container {
-  max-width: 100%;
-  margin: 0 auto;
-}
-
 .driver-card {
   background-color: #1a1830;
   padding: 20px;
   border-radius: 10px;
+}
+#driver-card-area {
 }
 
 .driver-header h2, .driver-header h3 {
@@ -155,16 +196,6 @@ form {
   border-radius: 10px;
 }
 
-.form-group, fieldset {
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-
 input[type="number"], select {
   width: 100%;
   padding: 8px;
@@ -186,15 +217,11 @@ legend {
 }
 
 /* Radio Buttons */
-.radio-group label {
-  margin-right: 15px;
-}
-
 input[type="radio"] {
   accent-color: #00bfff;
 }
 
-/* Form Buttons */
+/* Buttons */
 .button-group {
   display: flex;
   flex-direction: column;

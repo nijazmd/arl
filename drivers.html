@@ -3,32 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <title>Drivers</title>
-  <link rel="stylesheet" href="style.css"> <!-- Assuming you have a style.css already -->
-  <script defer src="drivers.js"></script> <!-- New JS file for this page -->
+  <link rel="stylesheet" href="style.css">
+  <script defer src="drivers.js"></script>
+  <meta name="viewport" content="width=device-width, user-scalable=no">
 </head>
 <body>
 
   <h1>Driver Statistics</h1>
 
   <div id="driver-table-container">
-    <table id="driversTable">
-      <thead>
-        <tr>
-          <th>Driver</th>
-          <th>Team</th>
-          <th>L1</th>
-          <th>L2</th>
-          <th>L3</th>
-          <th>L4</th>
-          <th>L5</th>
-          <th>Total</th>
-          <th>Tot. Pts</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data will be populated here -->
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table id="driversTable">
+        <thead>
+          <tr>
+            <th>Driver</th>
+            <th>Team</th>
+            <th>L1</th>
+            <th>L2</th>
+            <th>L3</th>
+            <th>L4</th>
+            <th>L5</th>
+            <th>Total</th>
+            <th>Tot. Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data populated by JS -->
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <nav class="bottom-nav">

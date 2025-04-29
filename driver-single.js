@@ -107,7 +107,7 @@ async function loadDriverStats() {
 
 function renderDriverDetails(driverName) {
   const stats = driverStats[driverName];
-  const container = document.getElementById("driver-details-container");
+  const container = document.getElementById("driver-card-area");
 
   const firstPlaces = stats.firstPlace;
   const secondPlaces = stats.secondPlace;
@@ -192,7 +192,7 @@ async function loadDriverRaceHistory(driverName) {
 function renderDriverRaceHistory(driverRaces) {
   if (!driverRaces.length) return;
 
-  const container = document.getElementById("driver-details-container");
+  const container = document.getElementById("race-history-area");
 
   const table = document.createElement("table");
   table.classList.add("race-history-table");

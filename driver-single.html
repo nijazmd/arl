@@ -3,15 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>Driver Details</title>
-  <link rel="stylesheet" href="style.css"> <!-- Reuse existing CSS -->
-  <script defer src="driver-single.js"></script> <!-- New JS file for this page -->
+  <link rel="stylesheet" href="style.css">
+  <script defer src="driver-single.js"></script>
+  <meta name="viewport" content="width=device-width, user-scalable=no">
 </head>
 <body>
 
   <h1>Driver Statistics</h1>
 
   <div id="driver-details-container">
-    <!-- Driver details will be dynamically loaded here -->
+    <!-- Driver card will be inserted here -->
+    <div id="driver-card-area"></div>
+
+
+    <!-- Race history table will go inside this wrapper -->
+    <div class="table-wrapper" id="race-history-area"></div>
   </div>
 
   <nav class="bottom-nav">
