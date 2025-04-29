@@ -206,7 +206,6 @@ function renderDriverRaceHistory(driverRaces) {
         <th>Track</th>
         <th>Chances</th>
         <th>Position</th>
-        <th>Points</th>
       </tr>
     </thead>
   `;
@@ -225,7 +224,6 @@ function renderDriverRaceHistory(driverRaces) {
         <td>${race.track}</td>
         <td>${race.chances}</td>
         <td>${race.position}</td>
-        <td>${race.points}</td>
       </tr>
     `;
   }).join("");
