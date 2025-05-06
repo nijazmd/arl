@@ -238,6 +238,7 @@ async function loadStandings() {
     const rows = data.split("\n").slice(1).map(row => row.split(","));
 
     const driverPoints = {};
+    const driverRaceCount = {};
 
     rows.forEach(row => {
       const driver = row[2]?.replace(/"/g, '').trim();
@@ -245,8 +246,12 @@ async function loadStandings() {
 
       if (!driver || isNaN(points)) return;
 
-      if (!driverPoints[driver]) driverPoints[driver] = 0;
+      if (!driverPoints[driver]) {
+        driverPoints[driver] = 0;
+        driverRaceCount[driver] = 0;
+      }
       driverPoints[driver] += points;
+      driverRaceCount[driver] += 1;
     });
 
     // Fetch Driver-Team mapping
@@ -263,14 +268,32 @@ async function loadStandings() {
     });
 
     const teamPoints = {};
+    const teamRaceCount = {};
     for (const [driver, points] of Object.entries(driverPoints)) {
       const team = driverTeams[driver] || "Unknown Team";
-      if (!teamPoints[team]) teamPoints[team] = 0;
+      if (!teamPoints[team]) {
+        teamPoints[team] = 0;
+        teamRaceCount[team] = 0;
+      }
       teamPoints[team] += points;
+      teamRaceCount[team] += driverRaceCount[driver] || 0;
     }
 
-    const sortedDrivers = Object.entries(driverPoints).sort((a, b) => b[1] - a[1]);
-    const sortedTeams = Object.entries(teamPoints).sort((a, b) => b[1] - a[1]);
+    const sortedDrivers = Object.entries(driverPoints)
+      .sort((a, b) => b[1] - a[1])
+      .map(([driver, points]) => ({
+        driver,
+        points,
+        races: driverRaceCount[driver] || 0
+      }));
+
+    const sortedTeams = Object.entries(teamPoints)
+      .sort((a, b) => b[1] - a[1])
+      .map(([team, points]) => ({
+        team,
+        points,
+        races: teamRaceCount[team] || 0
+      }));
 
     renderDriverStandings(sortedDrivers);
     renderTeamStandings(sortedTeams);
@@ -280,39 +303,46 @@ async function loadStandings() {
   }
 }
 
-// Render Driver Standings Table
-function renderDriverStandings(sortedDrivers) {
+
+function renderDriverStandings(standings) {
   const container = document.getElementById("driver-standings");
-  let html = "<table><tr><th>Rank</th><th>Driver</th><th>Team</th><th>Points</th></tr>";
-
-  sortedDrivers.forEach(([driver, points], index) => {
-    const team = driverTeams[driver] || "Unknown Team";
-    html += `<tr>
-      <td>${index + 1}</td>
-      <td><a href="driver-single.html?driver=${encodeURIComponent(driver)}">${driver}</a></td>
-      <td>${team}</td>
-      <td>${points}</td>
-    </tr>`;
-  });
-
-  html += "</table>";
-  container.innerHTML = html;
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr><th>R</th><th>Dr</th><th>G</th><th>Pts</th></tr>
+      </thead>
+      <tbody>
+        ${standings.map((item, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.driver}</td>
+            <td>${item.races}</td>
+            <td>${item.points}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
 
-
-// Render Team Standings Table
-function renderTeamStandings(sortedTeams) {
+function renderTeamStandings(standings) {
   const container = document.getElementById("team-standings");
-  let html = "<table><tr><th>Rank</th><th>Team</th><th>Points</th></tr>";
-
-  sortedTeams.forEach(([team, points], index) => {
-    html += `<tr>
-      <td>${index + 1}</td>
-      <td>${team}</td>
-      <td>${points}</td>
-    </tr>`;
-  });
-
-  html += "</table>";
-  container.innerHTML = html;
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr><th>R</th><th>Tm</th><th>G</th><th>Pts</th></tr>
+      </thead>
+      <tbody>
+        ${standings.map((item, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${item.team}</td>
+            <td>${item.races}</td>
+            <td>${item.points}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
+
