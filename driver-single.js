@@ -54,8 +54,8 @@ async function loadDriverStats() {
       const cols = row.split(",");
       const driverName = cols[2]?.replace(/"/g, '').trim();
       const raceLevelRaw = cols[5]?.trim();
-      const points = parseInt(cols[8]?.trim(), 10);
-      const finishPosition = parseInt(cols[6]?.trim(), 10);
+      const points = parseInt(cols[9]?.trim(), 10);
+      const finishPosition = parseInt(cols[8]?.trim(), 10);
 
       if (!driverName) return;
 
@@ -118,39 +118,26 @@ function renderDriverDetails(driverName) {
   const pointsAverage = stats.totalRaces ? (stats.totalPoints / stats.totalRaces) : 0;
 
   container.innerHTML = `
-    <div class="driver-card">
-      <div class="driver-header">
-        <h2>${driverName}</h2>
-        <h3 class="team-name">${stats.team}</h3>
-      </div>
+  <div class="driver-profile-header">
+    <h1 class="driver-name">${driverName}</h1>
+    <h2 class="driver-team">${stats.team}</h2>
+  </div>
 
-      <div class="driver-stats">
-        <div class="stat-item"><span>L1:</span> ${stats.level1}</div>
-        <div class="stat-item"><span>L2:</span> ${stats.level2}</div>
-        <div class="stat-item"><span>L3:</span> ${stats.level3}</div>
-        <div class="stat-item"><span>L4:</span> ${stats.level4}</div>
-        <div class="stat-item"><span>L5:</span> ${stats.level5}</div>
-<br>
-        <div class="stat-item"><span><b>Total Races:</span> ${stats.totalRaces}</b></div>
-        <div class="stat-item"><span><b>Total Points:</span> ${stats.totalPoints}</b></div>
-<br>
-<br>
+  <div class="driver-stat-group">
+    <div class="pair"><div class="label">Total Races</div><div class="value">${stats.totalRaces}</div></div>
+    <div class="pair"><div class="label">Total Points</div><div class="value">${stats.totalPoints}</div></div>
 
-        <div class="stat-item"><span>1st:</span> ${firstPlaces}</div>
-        <div class="stat-item"><span>2nd:</span> ${secondPlaces}</div>
-        <div class="stat-item"><span>3rd:</span> ${thirdPlaces}</div>
-<br>
+    <div class="pair"><div class="label">1st Places</div><div class="value">${firstPlaces}</div></div>
+    <div class="pair"><div class="label">2nd Places</div><div class="value">${secondPlaces}</div></div>
+    <div class="pair"><div class="label">3rd Places</div><div class="value">${thirdPlaces}</div></div>
+    <div class="pair"><div class="label">Total Podiums</div><div class="value">${totalPodiums}</div></div>
 
-        <div class="stat-item"><span><b>Total Podiums:</span> ${totalPodiums}</b></div>
-        <br>
-        <br>
+    <div class="pair"><div class="label">Points Avg.</div><div class="value">${pointsAverage.toFixed(2)}</div></div>
+    <div class="pair"><div class="label">1st Place %</div><div class="value">${firstPlacePercentage.toFixed(1)}%</div></div>
+    <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPercentage.toFixed(1)}%</div></div>
+  </div>
+`;
 
-        <div class="stat-item"><span>1st Place %:</span> ${firstPlacePercentage.toFixed(2)}%</div>
-        <div class="stat-item"><span>Podium %:</span> ${podiumPercentage.toFixed(2)}%</div>
-        <div class="stat-item"><span>Points Average:</span> ${pointsAverage.toFixed(2)}</div>
-      </div>
-    </div>
-  `;
 }
 
 // NEW FUNCTIONS BELOW
@@ -199,15 +186,16 @@ function renderDriverRaceHistory(driverRaces) {
 
   const thead = `
     <thead>
-      <tr>
-        <th>Round</th>
-        <th>Date</th>
-        <th>Car</th>
-        <th>Track</th>
-        <th>Chances</th>
-        <th>Position</th>
-      </tr>
-    </thead>
+  <tr>
+    <th>Round</th>
+    <th>Position</th>
+    <th>Chances</th>
+    <th>Car</th>
+    <th>Track</th>
+    <th>Date</th>
+  </tr>
+</thead>
+
   `;
 
   const tbody = driverRaces.map(race => {
@@ -217,15 +205,16 @@ function renderDriverRaceHistory(driverRaces) {
     else if (race.position === "3") rowClass = "third-place";
 
     return `
-      <tr class="${rowClass}">
-        <td>${race.round}</td>
-        <td>${race.date}</td>
-        <td>${race.car}</td>
-        <td>${race.track}</td>
-        <td>${race.chances}</td>
-        <td>${race.position}</td>
-      </tr>
-    `;
+  <tr class="${rowClass}">
+    <td>${race.round}</td>
+    <td>${race.position}</td>
+    <td>${race.chances}</td>
+    <td>${race.car}</td>
+    <td>${race.track}</td>
+    <td>${race.date}</td>
+  </tr>
+`;
+
   }).join("");
 
   table.innerHTML = thead + `<tbody>${tbody}</tbody>`;

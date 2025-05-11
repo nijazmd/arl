@@ -78,30 +78,67 @@ async function populateCarDropdown() {
   }
   
   // 🆕 Populate Tracks
-  async function populateTrackDropdown() {
-    try {
-      const trackSelect = document.getElementById("trackName");
-      if (!trackSelect) return;
-  
-      const response = await fetch(tracksSheetURL);
-      const data = await response.text();
-      const rows = data.split("\n").slice(1);
-  
-      trackSelect.innerHTML = '<option value="">Select Track</option>';
-      rows.forEach(row => {
-        const cols = row.split(",");
-        const trackName = cols[0]?.replace(/["\r\n]/g, '').trim(); // 🛠 fixed here
-        if (trackName) {
-          const option = document.createElement("option");
-          option.value = trackName;
-          option.textContent = trackName;
-          trackSelect.appendChild(option);
-        }
-      });
-    } catch (error) {
-      console.error("Error loading tracks:", error);
-    }
+const trackToCircuits = {}; // global map
+
+
+async function populateTrackDropdown() {
+  try {
+    const trackSelect = document.getElementById("trackName");
+    if (!trackSelect) return;
+    
+    const response = await fetch(tracksSheetURL);
+    const data = await response.text();
+    const rows = data.split("\n").slice(1);
+    
+    const uniqueTracks = new Set();
+    Object.keys(trackToCircuits).forEach(key => delete trackToCircuits[key]);
+
+    rows.forEach(row => {
+      const [trackRaw, circuitRaw] = row.split(",");
+      const track = trackRaw?.replace(/["\r\n]/g, "").trim();
+      const circuit = circuitRaw?.replace(/["\r\n]/g, "").trim();
+
+      if (!track) return;
+
+      if (!trackToCircuits[track]) trackToCircuits[track] = [];
+      if (circuit && !trackToCircuits[track].includes(circuit)) {
+        trackToCircuits[track].push(circuit);
+      }
+
+      uniqueTracks.add(track);
+    });
+
+    trackSelect.innerHTML = '<option value="">Select Track</option>';
+    [...uniqueTracks].forEach(track => {
+      const option = document.createElement("option");
+      option.value = track;
+      option.textContent = track;
+      trackSelect.appendChild(option);
+    });
+
+    trackSelect.addEventListener("change", updateCircuitDropdown);
+  } catch (error) {
+    console.error("Error loading tracks and circuits:", error);
   }
+}
+
+function updateCircuitDropdown() {
+  const trackSelect = document.getElementById("trackName");
+  const circuitSelect = document.getElementById("circuitName");
+
+  const selectedTrack = trackSelect.value;
+  const circuits = trackToCircuits[selectedTrack] || [];
+
+  circuitSelect.innerHTML = '<option value="">Select a circuit</option>';
+  circuits.forEach(circuit => {
+    const option = document.createElement("option");
+    option.value = circuit;
+    option.textContent = circuit;
+    circuitSelect.appendChild(option);
+  });
+}
+
+
   
 
 async function populateCurrentRound() {
@@ -188,14 +225,18 @@ async function submitRaceResult(event) {
     const driverName = document.getElementById('driverName').value;
     const carSelect = document.getElementById('carName');
     const trackSelect = document.getElementById('trackName');
+    const circuitSelect = document.getElementById("circuitName");
+    const circuitName = circuitSelect ? circuitSelect.value : "";
     const carName = carSelect ? carSelect.value : "";
     const trackName = trackSelect ? trackSelect.value : "";
+    const direction = document.querySelector('input[name="direction"]:checked')?.value;
     const raceLevel = document.querySelector('input[name="raceLevel"]:checked')?.value;
     const chances = document.querySelector('input[name="chances"]:checked')?.value;
     const position = document.querySelector('input[name="position"]:checked')?.value;
     const points = calculatePoints(position, chances);
   
-    if (!driverName || !raceLevel || !chances || !position || !roundNumber) {
+    if (!driverName || !raceLevel || !chances || !position || !roundNumber || !direction) {
+
       alert("Please fill out all required fields.");
       return;
     }
@@ -208,10 +249,13 @@ formData.append('driverName', driverName);
 formData.append('team', teamName); // ✅ Safe now
 if (carName) formData.append('carName', carName);
 if (trackName) formData.append('trackName', trackName);
+if (circuitName) formData.append('circuitName', circuitName);
 formData.append('raceLevel', raceLevel);
 formData.append('chances', chances);
 formData.append('position', position);
 formData.append('points', points);
+formData.append('direction', direction);
+
 
 
   
@@ -269,7 +313,7 @@ async function loadStandings() {
 
     rows.forEach(row => {
       const driver = row[2]?.replace(/"/g, '').trim();
-      const points = parseInt(row[8], 10);
+      const points = parseInt(row[9], 10);
 
       if (!driver || isNaN(points)) return;
 
