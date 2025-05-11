@@ -41,7 +41,7 @@ async function loadDriverStats() {
         const cols = row.split(",");
         const driverName = cols[2]?.replace(/"/g, '').trim();
         const raceLevelRaw = cols[5]?.trim();
-        const points = parseInt(cols[8]?.trim(), 10);
+        const points = parseInt(cols[11]?.trim(), 10);
   
         if (!driverName) return;
   
@@ -106,13 +106,13 @@ function renderDriverTable() {
     row.innerHTML = `
       <td>${driverLink}</td>
       <td>${stats.team}</td>
+      <td>${stats.totalPoints}</td>
+      <td>${stats.totalRaces}</td>
       <td>${stats.level1}</td>
       <td>${stats.level2}</td>
       <td>${stats.level3}</td>
       <td>${stats.level4}</td>
       <td>${stats.level5}</td>
-      <td>${stats.totalRaces}</td>
-      <td>${stats.totalPoints}</td>
     `;
     tbody.appendChild(row);
   });
