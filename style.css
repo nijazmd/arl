@@ -1,396 +1,686 @@
+/* Import racing-style font */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
 
-/* GENERAL RESET AND MOBILE OPTIMIZATION */
-* {
+/* Base */
+body {
+  margin: 0;
+  padding-bottom: 70px;
+  font-family: 'Rajdhani', sans-serif;
+  background-color: #0d0b1a;
+  color: #e0e0e0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Headings */
+h1, h2, h3 {
+  color: #00bfff;
+  margin: 20px 0 10px 20px;
+  font-size: 24px;
+}
+
+/* Containers */
+#content, #driver-table-container, #driver-details-container {
+  padding: 20px 20px 50px 20px;
+  width: 100%;
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  padding: 1.5rem;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #0f172a; /* deep indigo */
-  color: #f1f5f9;
-  font-size: 15px;
-  padding-bottom: 70px;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-a:visited {
-  color: inherit;
-  text-decoration: none;
-}
-
-h1, h2, h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 1.5rem 0 1rem;
-  color: #e2e8f0;
-}
-
-label, select {
-  display: block;
-  margin: 1rem 0;
-  font-size: 14px;
-}
-
-select {
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: none;
-  background: #1e293b;
-  color: #f8fafc;
-}
-
-/* TABLES */
-.table-container {
+/* Table Wrapper for Scroll */
+.table-wrapper {
+  width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-bottom: 2rem;
 }
 
-table {
+#driver-details-container {
+  width: 100%;
+  overflow-x: auto; /* Important for mobile scrolling */
+}
+
+.race-history-table {
+  min-width: 800px;
   width: 100%;
   border-collapse: collapse;
-  background: #1e293b;
-  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.race-history-table th,
+.race-history-table td {
+  border: 1px solid #2e2c54;
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.race-history-table th {
+  background-color: #252343;
+  color: #e0e0e0;
+}
+
+.race-history-table tr.first-place {
+  background-color: #ffd70044;
+}
+
+.race-history-table tr.second-place {
+  background-color: #c0c0c044;
+}
+
+.race-history-table tr.third-place {
+  background-color: #cd7f3244;
+}
+
+@media (max-width: 600px) {
+  .race-history-table th, .race-history-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+
+/* Tables */
+table {
+  width: 100%;
+  /* min-width: 800px; */
+  border-collapse: collapse;
+  background-color: #1a1830;
+  box-sizing: border-box;
+  border-radius: 8px;
   overflow: hidden;
+  margin-top: 20px;
+}
+
+thead {
+  background-color: #252343;
 }
 
 th, td {
-  padding: 0.8rem;
-  text-align: center;
-  font-size: 14px;
-  border-bottom: 1px solid #334155;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #2e2c54;
+  font-size: 16px;
 }
 
-th {
-  background: #1e293b;
-  color: #94a3b8;
+tbody tr:hover {
+  background-color: #2d2a4d;
 }
 
-td {
-  color: #f8fafc;
-}
-
-a.team-link {
-  color: #60a5fa;
+/* Links */
+a {
+  color: #00bfff;
   text-decoration: none;
-}
-
-/* STAT CARDS */
-.stat-card {
-  background: #1e293b;
-  border-radius: 12px;
-  padding: 1rem;
-  margin: 0.5rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  flex: 1 1 45%;
-  max-width: 48%;
-}
-
-.stat-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-bottom: 0.3rem;
-}
-
-.stat-value {
-  font-size: 20px;
   font-weight: 600;
-  color: #f8fafc;
 }
 
-/* PLAYER SECTIONS */
-.split-box {
-  background: #1e293b;
+a:hover {
+  text-shadow: 0 0 8px #00bfff;
+}
+
+/* Driver Single Page */
+.driver-card {
+  background-color: #1a1830;
+  padding: 20px;
   border-radius: 10px;
-  padding: 1rem;
-  margin: 1rem 0;
 }
 
-.recent-game {
-  background: #1e293b;
-  margin: 0.5rem 0;
-  padding: 0.8rem;
-  border-radius: 10px;
-  color: #f8fafc;
+.driver-header h2, .driver-header h3 {
+  margin: 0 0 10px 0;
 }
 
-/* GAME SUMMARY TAGS */
-.game-summary {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
+.driver-header .team-name {
+  color: #8ab4f8;
 }
 
-.game-tag {
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  font-weight: 600;
-  color: white;
-  background: #334155;
+.driver-stats {
+  margin-top: 20px;
 }
 
-.game-tag.W {
-  background-color: #22c55e;
+.driver-stats .stat-item {
+  margin-bottom: 8px;
+  font-size: 18px;
 }
 
-.game-tag.WE {
-  background-color: #4ade80;
+.stat-item span {
+  color: #8ab4f8;
+  margin-right: 10px;
 }
 
-.game-tag.L {
-  background-color: #ef4444;
+/* Plus Button */
+.plus-button {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background-color: #00bfff;
+  color: #0d0b1a;
+  border: none;
+  font-size: 32px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #00bfff;
+  cursor: pointer;
 }
 
-.extra-time {
-  font-size: 11px;
-  opacity: 0.8;
+.plus-button:hover {
+  background-color: #00dfff;
+  box-shadow: 0 0 20px #00dfff;
 }
 
-/* NAVIGATION */
+/* Bottom Navigation */
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
-  background: #0f172a;
+  width: 100%;
+  background-color: #1a1830;
   display: flex;
   justify-content: space-around;
-  padding: 0.6rem 0;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid #2e2c54;
 }
 
-.nav-icon {
-  color: #f8fafc;
-  font-size: 20px;
-  text-decoration: none;
+.bottom-nav a {
+  color: #e0e0e0;
+  font-size: 18px;
 }
 
-/* PLAYER NAME + TEAM INFO */
-.player-name, .team-name, .player-position {
-  font-size: 20px;
-  font-weight: bold;
-  color: #e2e8f0;
-  margin: 0.5rem 0;
+.bottom-nav a:hover {
+  color: #00bfff;
+  text-shadow: 0 0 8px #00bfff;
+}
+
+/* Forms */
+form {
+  background-color: #1a1830;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+input[type="number"], select {
+  width: 100%;
+  padding: 8px;
+  background-color: #2e2c54;
+  border: none;
+  border-radius: 5px;
+  color: #e0e0e0;
+}
+
+fieldset {
+  border: 1px solid #2e2c54;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px auto;
+}
+
+legend {
+  color: #00bfff;
+  font-weight: 600;
+}
+
+/* Radio Buttons */
+input[type="radio"] {
+  accent-color: #00bfff;
+}
+
+/* Buttons */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.btn {
+  background-color: #00bfff;
+  color: #0d0b1a;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 0 10px #00bfff;
+}
+
+.btn:hover {
+  background-color: #00dfff;
+  box-shadow: 0 0 15px #00dfff;
+}
+
+.cancel {
+  background-color: #555;
+  color: #e0e0e0;
+  box-shadow: none;
+}
+
+.cancel:hover {
+  background-color: #777;
+}
+
+/* Race History Table */
+.race-history-table {
+  min-width: 600px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.race-history-table th,
+.race-history-table td {
+  border: 1px solid #2e2c54;
+  padding: 8px;
   text-align: center;
 }
 
-/* SPLIT HOME-AWAY LAYOUT */
-.split-columns {
+.race-history-table th {
+  background-color: #333333;
+  color: #ffffff;
+}
+
+.race-history-table tr.first-place {
+  background-color: #ffd70044;
+}
+
+.race-history-table tr.second-place {
+  background-color: #c0c0c044;
+}
+
+.race-history-table tr.third-place {
+  background-color: #cd7f3244;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  h1, h2, h3 {
+    font-size: 20px;
+  }
+
+  th, td {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .driver-stats .stat-item {
+    font-size: 16px;
+  }
+
+  .btn {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .plus-button {
+    width: 50px;
+    height: 50px;
+    font-size: 26px;
+  }
+
+  .bottom-nav a {
+    font-size: 16px;
+  }
+}
+
+.version {
+  padding: 20px 0;
+  font-size: 12px;
+  color: #2e2c54;
+}
+.race-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.race-card {
+  background-color: #1e1e3f;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.race-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.race-body > div {
+  margin-bottom: 0.25rem;
+}
+.race-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.race-selector label {
+  background: #292a4d;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.race-selector input[type="radio"] {
+  margin-right: 0.3rem;
+}
+
+.race-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.race-card {
+  background-color: #1e1e3f;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.race-date {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 0.5rem;
+}
+
+.race-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.race-pair .label {
+  flex: 1 1 50%;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.race-pair .value {
+  flex: 1 1 50%;
+  font-weight: bold;
+  color: #fff;
+}
+
+.race-pair .dominant {
+  color: #ffd700;
+  font-size: 1.2rem;
+}
+.pair {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+}
+
+.team-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+.team-selector label {
+  background: #333;
+  color: #ddd;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.team-summary {
+  padding: 1rem;
+  text-align: center;
+}
+
+.dominant {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.driver-cards-container {
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.home-away-box {
-  background: #1e293b;
-  border-radius: 12px;
-  padding: 1rem;
-}
-
-/* VERSION */
-.version {
-  margin-top: 2rem;
-  text-align: center;
-  font-size: 12px;
-  color: #64748b;
-}
-
-/* SCROLLBAR HIDE BUT SCROLL ENABLE */
-.table-container::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none;
-}
-
-.recent-games-grid {
-  display: grid;
-  gap: 12px;
-  margin-top: 20px;
-  padding: 0 10px 60px;
-}
-
-.recent-game-card {
-  background: #1e1e2f;
-  padding: 10px 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-.result-tag {
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-bottom: 6px;
-}
-
-.result-tag.win {
-  color: #4caf50;
-}
-.result-tag.we {
-  color: #4caf50;
-}
-.result-tag.loss {
-  color: #f44336;
-}
-
-.extra-time {
-  font-size: 0.8em;
-  opacity: 0.8;
-}
-
-.game-line {
-  margin: 4px 0;
-}
-
-.game-link a {
-  text-decoration: none;
-  color: #fff;
-  font-weight: bold;
-}
-
-#totalStats, #avgStats {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.team-radio-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-  justify-content: space-between;
-}
-
-.team-radio-group label {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  background-color: #333;
+.driver-card {
+  background: #1e1e3f;
   color: white;
-  border: 2px solid transparent;
-  transition: 0.3s;
-  user-select: none;
-}
-
-/* Hide native radio input */
-.team-radio-group input[type="radio"] {
-  display: none;
-}
-
-/* Highlight selected */
-.team-radio-group input[type="radio"]:checked + span {
-  border-color: #fff;
-  box-shadow: 0 0 5px #fff;
-}
-
-form {
-  max-width: 800px;
-  margin: 0 auto;
   padding: 1rem;
-  color: #eee;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
 }
 
-form h3 {
-  margin-top: 2rem;
-  font-size: 1rem;
-  color: #ccc;
-  border-bottom: 1px solid #333;
-  padding-bottom: 4px;
+.driver-pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.pair {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+.value {
+  font-weight: bold;
+  color: #fff;
+}
+
+.driver-row {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 0.5rem;
 }
 
-label {
-  display: block;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+.team-name-heading {
+  font-size: 1.8rem;
+  text-align: center;
+  color: #ffd700;
+  margin-bottom: 0.5rem;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="date"],
-select {
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-radius: 6px;
-  background: #1e1e1e;
+.driver-name {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
   color: #fff;
-  margin-top: 4px;
+}
+.page-title {
+  text-align: center;
+  font-size: 1.6rem;
+  margin: 1rem 0;
+  color: #ffd700;
 }
 
-#teamPlayers > div,
-#opponentPlayers > div {
-  border: 1px solid #333;
-  background: #181818;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
+.car-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
 }
 
-#shootoutStats,
-#otherTeamContainer {
-  margin-top: 1rem;
-}
-
-button[type="submit"] {
-  width: 100%;
-  background: #4f46e5;
+.car-card {
+  display: flex;
+  background-color: #1e1e3f;
   color: white;
-  padding: 12px;
-  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.car-image {
+  width: 100px;
+  height: auto;
+  margin-right: 1rem;
   border-radius: 8px;
-  margin-top: 1rem;
-  font-size: 1rem;
-  cursor: pointer;
+  object-fit: contain;
 }
 
-/* Modern radio buttons styled as pills */
-input[type="radio"] {
-  display: none;
+.car-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-label.radio-group {
-  display: inline-block;
-  margin-right: 10px;
+.car-name a {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+.car-name a:hover {
+  text-decoration: underline;
 }
 
-label.radio-group span {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: #2d2d2d;
-  color: #ccc;
-  cursor: pointer;
+.car-meta, .car-pp, .car-make {
   font-size: 0.9rem;
-  transition: all 0.2s ease-in-out;
+  color: #ccc;
+  margin-top: 0.2rem;
 }
 
-input[type="radio"]:checked + span {
-  background: #4f46e5;
+.car-single-container {
+  padding: 1rem;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  color: #ffd700;
+}
+
+.car-info-card, .car-stats-card {
+  background: #1e1e3f;
   color: white;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
 }
 
+.car-info-card .label,
+.car-stats-card .label {
+  color: #bbb;
+  font-size: 0.9rem;
+}
 
+.car-info-card .value,
+.car-stats-card .value {
+  font-weight: bold;
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
 
-/* Add team-specific colors (you can customize this list) */
-label[for="team_BIS"] { background-color: #2463ac; }
-label[for="team_BOS"] { background-color: #23ddf5; }
-label[for="team_CAR"] { background-color: #881f2b; }
-label[for="team_FRE"] { background-color: #cdbf1e; color: #000; }
-label[for="team_GRE"] { background-color: #417505; }
-label[for="team_HST"] { background-color: #d67022; }
-label[for="team_OTT"] { background-color: #efe441; }
-label[for="team_PNX"] { background-color: #2a0c4a; }
-label[for="team_ZDG"] { background-color: #63cc3d; }
-/* Add more teams as needed */
+.car-image-large {
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  margin: 0 auto 1rem;
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.stat-row {
+  margin-bottom: 0.5rem;
+}
+.stat-pairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pair {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+}
+
+.pair .label {
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+.pair .value {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #fff;
+}
+.driver-profile-header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.driver-name {
+  font-size: 1.8rem;
+  color: #ffd700;
+}
+.driver-team {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-top: 0.3rem;
+}
+
+.driver-stat-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background: #1e1e3f;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+}
+.pair {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+.pair .label {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+.pair .value {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.race-history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.race-history-table th,
+.race-history-table td {
+  padding: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #444;
+}
+.first-place td {
+  background: rgba(255, 215, 0, 0.1);
+}
+.second-place td {
+  background: rgba(192, 192, 192, 0.1);
+}
+.third-place td {
+  background: rgba(205, 127, 50, 0.1);
+}

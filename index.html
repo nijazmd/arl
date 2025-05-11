@@ -1,50 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AHL Standings</title>
+  <meta charset="UTF-8">
+  
   <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+  <title>ARL1</title>
   <link rel="stylesheet" href="style.css">
-  <!-- <style>
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #f4f4f4; }
-  </style> -->
+
 </head>
 <body>
-  <h2>AHL Team Standings</h2>
-  <div class="table-container">
-    <table id="standingsTable">
-      <thead>
-        <tr>
-          <th>Position</th>
-          <th>Team</th>
-          <th>Points</th>
-          <th>Goals For</th>
-          <th>Goals Against</th>
-          <th>Goal Difference</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data will be populated dynamically here -->
-      </tbody>
-    </table>
+
+  <div id="content">
+    <h2>Current Round: <span id="currentRoundDisplay"></span></h2>
+
+    <h1>Driver Standings</h1>
+    <div id="driver-standings" class="table-container"></div>
+
+    <h1>Team Standings</h1>
+    <div id="team-standings" class="table-container"></div>
+
+    <div class="version">0.2.4</div>
   </div>
 
-  <h2>Last 5 Game Results</h2>
-<div id="last5GamesContainer" class="recent-games-grid"></div>
+  <nav class="bottom-nav">
+    <a href="index.html">🏠</a>
+    <a href="team.html">👥</a>
+    <a href="drivers.html">🛞</a>
+    <a href="cars.html">🏎️</a>
+    <a href="add.html">➕</a>
+  </nav>
 
 
-<nav class="bottom-nav">
-  <a href="index.html" class="nav-icon">🏠</a>
-  <a href="team.html" class="nav-icon">🛡️</a>
-  <a href="players.html" class="nav-icon">🏒</a>
-  <a href="add.html" class="nav-icon">➕</a>
-</nav>
+  <script src="main.js"></script>
 
-<script src="index.js"></script>
-
-<div class="version">0.0.5 250510</div>
 </body>
 </html>
