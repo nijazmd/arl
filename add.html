@@ -1,112 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ARL - Add Race Result</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<html>
+  <head>
+    <base target="_top">
+    <title>Add Game Data</title>
+    <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <main id="content" class="full-page-form">
-    <form id="raceForm" onsubmit="submitRaceResult(event)">
-      <h2>Add Race Result</h2>
+    <link rel="stylesheet" href="style.css"><script src="add.js"></script>
+  </head>
+  <body>
+    <form onsubmit="submitForm(event)">
+      <label>Date: <input type="date" id="date" required></label>
 
-      <div class="form-group">
-        <label for="roundNumber">Round Number:</label>
-        <input type="number" id="roundNumber" name="roundNumber" value="1" required>
-      </div>
+      <label>Team:
+        <select id="team" required></select>
+      </label>
 
-      <div class="form-group">
-        <label for="driverName">Driver</label>
-        <select id="driverName" required></select>
-      </div>
-
-      <div class="form-group">
-        <label for="carName">Car</label>
-        <select id="carName" required></select>
-      </div>
-
-      <div class="form-group">
-        <label for="trackName">Track</label>
-        <select id="trackName" required></select>
-      </div>
-
-      <div class="form-group">
-        <label for="circuitName">Circuit</label>
-        <select id="circuitName" required>
-          <option value="">Select a circuit</option>
+      <label>Opponent:
+        <select id="opponent" required onchange="handleOpponentChange()">
+          <option value="Other">Other</option>
         </select>
+      </label>
+
+      <div id="otherTeamContainer" style="display:none;">
+        <label>Other Team Name:
+          <input type="text" id="otherTeamName" placeholder="Enter opponent team name">
+        </label>
       </div>
 
-      <fieldset>
-      <legend>Direction</legend>
-      <div class="radio-group">
-        <label><input type="radio" name="direction" value="Forward" checked="true" required> Forward</label>
-        <label><input type="radio" name="direction" value="Reverse"> Reverse</label>
+      <div>
+        <label class="radio-group">
+          <input type="radio" name="reg" value="Regular" checked>
+          <span>Regular</span>
+        </label>
+        <label class="radio-group">
+          <input type="radio" name="reg" value="ExtraTime">
+          <span>Extra Time</span>
+        </label>
+        <label class="radio-group">
+          <input type="radio" name="reg" value="Shootout">
+          <span>Shootout</span>
+        </label>
       </div>
-    </fieldset>
+      
 
+      <h3>Team Player Stats</h3>
+      <div id="teamPlayers"></div>
 
-      <fieldset>
-        <legend>Race Level</legend>
-        <div class="radio-group">
-          <label><input type="radio" name="raceLevel" value="1" checked="true" required> 1</label>
-          <label><input type="radio" name="raceLevel" value="2"> 2</label>
-          <label><input type="radio" name="raceLevel" value="3"> 3</label>
-          <label><input type="radio" name="raceLevel" value="4"> 4</label>
-          <label><input type="radio" name="raceLevel" value="5"> 5</label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Chances</legend>
-        <div class="radio-group">
-          <label><input type="radio" name="chances" value="1" checked="true" required> 1</label>
-          <label><input type="radio" name="chances" value="2"> 2</label>
-          <label><input type="radio" name="chances" value="3"> 3</label>
-          <label><input type="radio" name="chances" value="4"> 4</label>
-          <label><input type="radio" name="chances" value="5"> 5</label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Final Position</legend>
-        <div class="radio-group">
-          <label><input type="radio" name="position" value="1" checked="true" required> 1</label>
-          <label><input type="radio" name="position" value="2"> 2</label>
-          <label><input type="radio" name="position" value="3"> 3</label>
-          <label><input type="radio" name="position" value="4"> 4</label>
-          <label><input type="radio" name="position" value="5"> 5</label>
-        </div>
-      </fieldset>
-
-      <div class="form-group">
-        <label for="disciplinaryPoints">Disciplinary Points</label>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <button type="button" onclick="adjustDisciplinary(-1)">−</button>
-          <input type="number" id="disciplinaryPoints" name="disciplinaryPoints" value="5" style="width: 60px; text-align: center;">
-          <button type="button" onclick="adjustDisciplinary(1)">+</button>
-        </div>
+      <div id="opponentPlayersContainer" style="display:none;">
+        <h3>Opponent Player Stats</h3>
+        <div id="opponentPlayers"></div>
       </div>
 
+      <!-- Move Team Goals and Goals Conceded below player stats -->
+      <label>Team Goals: <input type="number" id="teamGoals" value="0" required ></label>
+      <label>Goals Conceded: <input type="number" id="goalsConceded" value="0" required ></label>
 
-
-      <div class="button-group">
-        <button type="submit" class="btn">Save</button>
+      <div id="shootoutStats" style="display:none;">
+        <label>Team Shootout Attempts:
+          <input type="number" id="teamShootOutAttempts" value="0">
+        </label>
+        <label>Team Shootout Goals:
+          <input type="number" id="teamSOGoals" value="0">
+        </label>
+        <label>Opponent Shootout Attempts:
+          <input type="number" id="oppShootOutAttempts" value="0">
+        </label>
+        <label>Opponent Shootout Goals:
+          <input type="number" id="oppSOGoals" value="0">
+        </label>
       </div>
+      
+
+      <button type="submit">Submit Game Data</button>
     </form>
-  </main>
-
-  <nav class="bottom-nav">
-    <a href="index.html">🏠</a>
-    <a href="team.html">👥</a>
-    <a href="drivers.html">🛞</a>
-    <a href="cars.html">🏎️</a>
-    <a href="add.html">➕</a>
-  </nav>
-
-  <script src="main.js"></script>
-
-</body>
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-icon">🏠</a>
+      <a href="team.html" class="nav-icon">🛡️</a>
+      <a href="players.html" class="nav-icon">🏒</a>
+      <a href="add.html" class="nav-icon">➕</a>
+    </nav>
+    
+  </body>
 </html>
