@@ -48,13 +48,13 @@ async function loadDriverStats() {
         if (!driverStats[driverName]) {
           driverStats[driverName] = {
             team: driverTeams[driverName] || "Unknown",
+            totalRaces: 0,
+            totalPoints: 0,
             level1: 0,
             level2: 0,
             level3: 0,
             level4: 0,
-            level5: 0,
-            totalRaces: 0,
-            totalPoints: 0
+            level5: 0
           };
         }
   

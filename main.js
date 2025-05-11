@@ -111,23 +111,45 @@ async function populateCurrentRound() {
   }
 }
 
+async function loadDriverTeams() {
+  try {
+    const response = await fetch(sheetURL);
+    const data = await response.text();
+    const rows = data.split("\n").slice(1);
+
+    rows.forEach(row => {
+      const cols = row.split(",");
+      const driverName = cols[0]?.replace(/"/g, '').trim();
+      const teamName = cols[1]?.replace(/"/g, '').trim();
+      if (driverName && teamName) {
+        driverTeams[driverName] = teamName;
+      }
+    });
+  } catch (error) {
+    console.error("Error loading driver teams:", error);
+  }
+}
+
+
 // Setup when page is ready
-document.addEventListener("DOMContentLoaded", () => {
-    populateDriverDropdown();
-    populateCarDropdown();
-    populateTrackDropdown();
-    populateCurrentRound();
-  
-    const currentRoundDisplay = document.getElementById('currentRoundDisplay');
-    if (currentRoundDisplay) {
-      currentRoundDisplay.textContent = currentRoundNumber;
-    }
-  
-    const driverStandings = document.getElementById('driver-standings');
-    if (driverStandings) {
-      loadStandings();
-    }
-  });
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadDriverTeams();  // ✅ ensure this runs before form submission
+  populateDriverDropdown();
+  populateCarDropdown();
+  populateTrackDropdown();
+  populateCurrentRound();
+
+  const currentRoundDisplay = document.getElementById('currentRoundDisplay');
+  if (currentRoundDisplay) {
+    currentRoundDisplay.textContent = currentRoundNumber;
+  }
+
+  const driverStandings = document.getElementById('driver-standings');
+  if (driverStandings) {
+    loadStandings();  // optional; not needed on add.html
+  }
+});
+
   
 
 // Open and Close Form
@@ -178,15 +200,20 @@ async function submitRaceResult(event) {
       return;
     }
   
-    const formData = new FormData();
-    formData.append('roundNumber', roundNumber);
-    formData.append('driverName', driverName);
-    if (carName) formData.append('carName', carName);
-    if (trackName) formData.append('trackName', trackName);
-    formData.append('raceLevel', raceLevel);
-    formData.append('chances', chances);
-    formData.append('position', position);
-    formData.append('points', points);
+const teamName = driverTeams[driverName] || "Unknown";
+
+const formData = new FormData();
+formData.append('roundNumber', roundNumber);
+formData.append('driverName', driverName);
+formData.append('team', teamName); // ✅ Safe now
+if (carName) formData.append('carName', carName);
+if (trackName) formData.append('trackName', trackName);
+formData.append('raceLevel', raceLevel);
+formData.append('chances', chances);
+formData.append('position', position);
+formData.append('points', points);
+
+
   
     try {
       await fetch(webAppUrl, {
@@ -309,13 +336,14 @@ function renderDriverStandings(standings) {
   container.innerHTML = `
     <table>
       <thead>
-        <tr><th>R</th><th>Dr</th><th>G</th><th>Pts</th></tr>
+        <tr><th>R</th><th>Dr</th><th>T</th><th>G</th><th>Pts</th></tr>
       </thead>
       <tbody>
         ${standings.map((item, index) => `
           <tr>
             <td>${index + 1}</td>
-            <td>${item.driver}</td>
+            <td><a href="driver-single.html?driver=${encodeURIComponent(item.driver)}">${item.driver}</a></td>
+            <td><a href="team.html?team=${encodeURIComponent(driverTeams[item.driver] || "Unknown")}">${driverTeams[item.driver] || "—"}</a></td>
             <td>${item.races}</td>
             <td>${item.points}</td>
           </tr>
@@ -324,6 +352,7 @@ function renderDriverStandings(standings) {
     </table>
   `;
 }
+
 
 function renderTeamStandings(standings) {
   const container = document.getElementById("team-standings");
@@ -336,7 +365,7 @@ function renderTeamStandings(standings) {
         ${standings.map((item, index) => `
           <tr>
             <td>${index + 1}</td>
-            <td>${item.team}</td>
+            <td><a href="team.html?team=${encodeURIComponent(item.team)}">${item.team}</a></td>
             <td>${item.races}</td>
             <td>${item.points}</td>
           </tr>
