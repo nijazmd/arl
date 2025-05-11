@@ -328,7 +328,10 @@ async function loadStandings() {
 
     rows.forEach(row => {
       const driver = row[2]?.replace(/"/g, '').trim();
-      const points = parseInt(row[9], 10);
+      const racePoints = parseInt(row[11], 10);
+  const disciplinaryPoints = parseInt(row[12], 10) || 0;
+  const points = isNaN(racePoints) ? 0 : racePoints + disciplinaryPoints;
+      
 
       if (!driver || isNaN(points)) return;
 
