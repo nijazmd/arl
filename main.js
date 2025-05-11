@@ -77,6 +77,15 @@ async function populateCarDropdown() {
     }
   }
   
+
+function adjustDisciplinary(amount) {
+  const input = document.getElementById("disciplinaryPoints");
+  if (!input) return;
+  const current = parseInt(input.value || "0", 10);
+  input.value = current + amount;
+}
+
+
   // 🆕 Populate Tracks
 const trackToCircuits = {}; // global map
 
@@ -234,6 +243,8 @@ async function submitRaceResult(event) {
     const chances = document.querySelector('input[name="chances"]:checked')?.value;
     const position = document.querySelector('input[name="position"]:checked')?.value;
     const points = calculatePoints(position, chances);
+    const disciplinaryPoints = document.getElementById("disciplinaryPoints")?.value || '';
+
   
     if (!driverName || !raceLevel || !chances || !position || !roundNumber || !direction) {
 
@@ -255,6 +266,8 @@ formData.append('chances', chances);
 formData.append('position', position);
 formData.append('points', points);
 formData.append('direction', direction);
+formData.append('disciplinaryPoints', disciplinaryPoints);
+
 
 
 
@@ -287,6 +300,8 @@ formData.append('direction', direction);
 
 // Points Calculation
 function calculatePoints(position, chances) {
+  const disciplinaryPoints = document.getElementById("disciplinaryPoints")?.value || '';
+
   const pointsTable = {
     1: { 1: 54, 2: 44, 3: 36, 4: 30, 5: 24 },
     2: { 1: 27, 2: 22, 3: 18, 4: 15, 5: 12 },

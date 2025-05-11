@@ -42,7 +42,7 @@
       <fieldset>
       <legend>Direction</legend>
       <div class="radio-group">
-        <label><input type="radio" name="direction" value="Forward" required> Forward</label>
+        <label><input type="radio" name="direction" value="Forward" checked="true" required> Forward</label>
         <label><input type="radio" name="direction" value="Reverse"> Reverse</label>
       </div>
     </fieldset>
@@ -51,7 +51,7 @@
       <fieldset>
         <legend>Race Level</legend>
         <div class="radio-group">
-          <label><input type="radio" name="raceLevel" value="1" required> 1</label>
+          <label><input type="radio" name="raceLevel" value="1" checked="true" required> 1</label>
           <label><input type="radio" name="raceLevel" value="2"> 2</label>
           <label><input type="radio" name="raceLevel" value="3"> 3</label>
           <label><input type="radio" name="raceLevel" value="4"> 4</label>
@@ -62,7 +62,7 @@
       <fieldset>
         <legend>Chances</legend>
         <div class="radio-group">
-          <label><input type="radio" name="chances" value="1" required> 1</label>
+          <label><input type="radio" name="chances" value="1" checked="true" required> 1</label>
           <label><input type="radio" name="chances" value="2"> 2</label>
           <label><input type="radio" name="chances" value="3"> 3</label>
           <label><input type="radio" name="chances" value="4"> 4</label>
@@ -73,13 +73,24 @@
       <fieldset>
         <legend>Final Position</legend>
         <div class="radio-group">
-          <label><input type="radio" name="position" value="1" required> 1</label>
+          <label><input type="radio" name="position" value="1" checked="true" required> 1</label>
           <label><input type="radio" name="position" value="2"> 2</label>
           <label><input type="radio" name="position" value="3"> 3</label>
           <label><input type="radio" name="position" value="4"> 4</label>
           <label><input type="radio" name="position" value="5"> 5</label>
         </div>
       </fieldset>
+
+      <div class="form-group">
+        <label for="disciplinaryPoints">Disciplinary Points</label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="adjustDisciplinary(-1)">−</button>
+          <input type="number" id="disciplinaryPoints" name="disciplinaryPoints" value="5" style="width: 60px; text-align: center;">
+          <button type="button" onclick="adjustDisciplinary(1)">+</button>
+        </div>
+      </div>
+
+
 
       <div class="button-group">
         <button type="submit" class="btn">Save</button>
