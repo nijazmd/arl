@@ -1,3 +1,4 @@
+const webAppUrl = "https://script.google.com/macros/s/AKfycbwLxrhusbzSJWL3kuHtG0x_gdjyjzFF8RBu3HipatIlpgy_Sa2HwUu-EuFbG6m5J1Lc7A/exec";
 
 const currentRoundNumber = 1;
 
@@ -21,6 +22,92 @@ const columnIndexMap = {
 };
 
 const driverTeams = {};
+
+function adjustDisciplinary(amount) {
+  const input = document.getElementById("disciplinaryPoints");
+  if (!input) return;
+  const current = parseInt(input.value || "0", 10);
+  input.value = Math.max(0, current + amount); // prevent negative values
+}
+
+
+function populateSelect(selectId, options) {
+  const select = document.getElementById(selectId);
+  if (!select) return;
+  select.innerHTML = '<option value="">Select</option>';
+  options.forEach(option => {
+    const opt = document.createElement("option");
+    opt.value = option;
+    opt.textContent = option;
+    select.appendChild(opt);
+  });
+}
+
+async function populateDriverDropdown() {
+  try {
+    const response = await fetch(sheetURL);
+    const text = await response.text();
+    const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
+    const headers = rows[0];
+    const col = name => headers.indexOf(name);
+
+    const driverNames = rows.slice(1).map(row => row[col("Driver")]).filter(Boolean);
+    populateSelect("driverName", driverNames);
+  } catch (err) {
+    console.error("Failed to populate drivers:", err);
+  }
+}
+
+async function populateCarDropdown() {
+  try {
+    const carSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2855635&single=true&output=csv";
+    const response = await fetch(carSheetUrl);
+    const text = await response.text();
+    const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
+    const headers = rows[0];
+    const col = name => headers.indexOf(name);
+
+    const carNames = rows.slice(1).map(row => row[col("CarName")]).filter(Boolean);
+    populateSelect("carName", carNames);
+  } catch (err) {
+    console.error("Failed to populate cars:", err);
+  }
+}
+
+const trackToCircuits = {};
+
+async function populateTrackDropdown() {
+  try {
+    const tracksSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2013785235&single=true&output=csv";
+    const response = await fetch(tracksSheetUrl);
+    const text = await response.text();
+    const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
+    const headers = rows[0];
+    const col = name => headers.indexOf(name);
+
+    rows.slice(1).forEach(row => {
+      const track = row[col("TrackName")];
+      const circuit = row[col("Circuit")];
+      if (!track) return;
+      if (!trackToCircuits[track]) trackToCircuits[track] = [];
+      if (circuit && !trackToCircuits[track].includes(circuit)) {
+        trackToCircuits[track].push(circuit);
+      }
+    });
+
+    populateSelect("trackName", Object.keys(trackToCircuits));
+    document.getElementById("trackName")?.addEventListener("change", updateCircuitDropdown);
+  } catch (err) {
+    console.error("Failed to populate tracks:", err);
+  }
+}
+
+function updateCircuitDropdown() {
+  const track = document.getElementById("trackName")?.value || "";
+  const circuits = trackToCircuits[track] || [];
+  populateSelect("circuitName", circuits);
+}
+
 
 async function loadStandings() {
     try {
@@ -138,14 +225,78 @@ function renderTeamStandings(standings) {
         </table>
     `;
 }
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const currentRoundDisplay = document.getElementById("currentRoundDisplay");
   if (currentRoundDisplay) {
     currentRoundDisplay.textContent = currentRoundNumber;
   }
 
-  // ✅ Call loadStandings if we're on a page that needs it
   if (document.getElementById("driver-standings") && document.getElementById("team-standings")) {
     loadStandings();
   }
+
+  // For add.html page
+  if (document.getElementById("raceForm")) {
+    populateDriverDropdown();
+    populateCarDropdown();
+    populateTrackDropdown();
+  }
 });
+
+async function submitRaceResult(event) {
+  event.preventDefault();
+
+  const form = document.getElementById("raceForm");
+  const formData = new FormData(form);
+
+  const driverName = formData.get("driverName");
+  const carName = formData.get("carName");
+  const trackName = formData.get("trackName");
+  const circuitName = formData.get("circuitName");
+  const direction = formData.get("direction");
+  const raceLevel = formData.get("raceLevel");
+  const chances = formData.get("chances");
+  const position = formData.get("position");
+  const disciplinaryPoints = formData.get("disciplinaryPoints");
+
+    if (!driverName || !carName || !trackName || !circuitName || !direction || !raceLevel || !chances || !position) {
+
+    alert("Please fill in all required fields.");
+    return;
+  }
+
+  const points = calculatePoints(position, chances);
+  function calculatePoints(position, chances) {
+  const pointsTable = {
+    1: { 1: 54, 2: 44, 3: 36, 4: 30, 5: 24 },
+    2: { 1: 27, 2: 22, 3: 18, 4: 15, 5: 12 },
+    3: { 1: 20, 2: 16, 3: 12, 4: 10, 5: 8 },
+    4: { 1: 11, 2: 8, 3: 6, 4: 4, 5: 2 },
+    5: { 1: 8, 2: 5, 3: 3, 4: 2, 5: 1 }
+  };
+
+  const pos = parseInt(position, 10);
+  const chance = parseInt(chances, 10);
+
+  return (pointsTable[pos] && pointsTable[pos][chance]) ? pointsTable[pos][chance] : 0;
+}
+
+
+  formData.append("points", points);
+
+  try {
+    await fetch(webAppUrl, {
+      method: "POST",
+      mode: "no-cors", // prevent CORS issues
+      body: formData
+    });
+
+    alert("Race result submitted!");
+    form.reset();
+  } catch (err) {
+    console.error("Submission failed:", err);
+    alert("There was an error submitting the form.");
+  }
+}
