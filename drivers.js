@@ -20,7 +20,7 @@ async function loadDriverTeams() {
     const col = name => headers.indexOf(name);
 
     rows.slice(1).forEach(row => {
-      const driverName = row[col("PlayerName")] || "";
+      const driverName = row[col("Driver")] || "";
       const teamName = row[col("Team")] || "Unknown";
       if (driverName) driverTeams[driverName] = teamName;
     });
@@ -28,6 +28,7 @@ async function loadDriverTeams() {
     console.error("Error loading driver teams:", error);
   }
 }
+
 
 // Load race results and calculate stats
 async function loadDriverStats() {
