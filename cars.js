@@ -6,10 +6,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     const response = await fetch(carsSheetURL);
     const text = await response.text();
-    const rows = text.split("\n").slice(1); // skip header
+    const rows = text.split("\n").map(row => row.split(",").map(s => s.replace(/"/g, "").trim()));
+    const headers = rows[0];
+    const dataRows = rows.slice(1);
 
-    const carCards = rows.map(row => {
-      const [carName, carMake, year, pp, type, country, imageUrl] = row.split(",").map(s => s.replace(/"/g, "").trim());
+    // Build column index mapping
+    const col = (name) => headers.indexOf(name);
+
+    const carCards = dataRows.map(row => {
+      const carName = row[col("CarName")];
+      const carMake = row[col("CarMake")];
+      const year = row[col("Year")];
+      const pp = row[col("PP")];
+      const type = row[col("Type")];
+      const country = row[col("Country")];
+      const imageUrl = row[col("ImageURL")];
 
       return `
         <div class="car-card">

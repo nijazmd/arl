@@ -1,58 +1,56 @@
-const sheetID = '1I42Q0kFCoNjoS3jey1N7bTBAmWs6TJK8373yBkhGlso'; // Your Google Sheet ID
-const sheetName = 'Drivers'; // Sheet name
-const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
+function doGet(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Drivers");
+  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+  const drivers = data.map(row => row[0]);
+  
+  const output = ContentService.createTextOutput(JSON.stringify({ drivers }))
+    .setMimeType(ContentService.MimeType.JSON);
 
-async function fetchDriversData() {
-    const response = await fetch(url);
-    const data = await response.text();
-    const rows = data.split('\n').slice(1);
-
-    let tableRows = '';
-
-    rows.forEach(row => {
-        const columns = row.split(',');
-        if (columns.length > 1) { // skip empty rows
-            const driverName = columns[0].trim();
-            const teamName = columns[1]?.trim() || '';
-            const RL1 = columns[2] || 0;
-            const RL2 = columns[3] || 0;
-            const RL3 = columns[4] || 0;
-            const RL4 = columns[5] || 0;
-            const RL5 = columns[6] || 0;
-            const totalRaces = parseInt(RL1) + parseInt(RL2) + parseInt(RL3) + parseInt(RL4) + parseInt(RL5);
-            const chances = columns[7] || 0;
-            const first = columns[8] || 0;
-            const second = columns[9] || 0;
-            const third = columns[10] || 0;
-            const totalPodiums = parseInt(first) + parseInt(second) + parseInt(third);
-            const chancePerRace = totalRaces ? (chances / totalRaces).toFixed(2) : 0;
-            const points = columns[11] || 0;
-            const pointsAvg = totalRaces ? (points / totalRaces).toFixed(2) : 0;
-
-            tableRows += `
-                <tr>
-                    <td><a href="driver.html?name=${encodeURIComponent(driverName)}">${driverName}</a></td>
-                    <td>${teamName}</td>
-                    <td>${RL1}</td>
-                    <td>${RL2}</td>
-                    <td>${RL3}</td>
-                    <td>${RL4}</td>
-                    <td>${RL5}</td>
-                    <td>${totalRaces}</td>
-                    <td>${chances}</td>
-                    <td>${first}</td>
-                    <td>${second}</td>
-                    <td>${third}</td>
-                    <td>${totalPodiums}</td>
-                    <td>${chancePerRace}</td>
-                    <td>${points}</td>
-                    <td>${pointsAvg}</td>
-                </tr>
-            `;
-        }
-    });
-
-    document.getElementById('driversBody').innerHTML = tableRows;
+  // CORS headers
+  return output.setHeader("Access-Control-Allow-Origin", "*")
+               .setHeader("Access-Control-Allow-Methods", "GET, POST")
+               .setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
-fetchDriversData();
+function doPost(e) {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("RaceResults");
+    const data = e.parameter;
+
+    const roundNumber = data.roundNumber || '';
+    const driverName = data.driverName || '';
+    const team = data.team || '';
+    const carName = data.carName || '';
+    const trackName = data.trackName || '';
+    const circuit = data.circuitName || ''; // ✅ this was missing
+    const direction = data.direction || ''; // ✅ now correctly included
+    const raceLevel = data.raceLevel || '';
+    const chances = data.chances || '';
+    const position = data.position || '';
+    const points = data.points || '';
+    const disciplinaryPoints = data.disciplinaryPoints || ''; // ✅ ADD THIS
+
+    // Insert the data into the correct columns
+    sheet.appendRow([
+      roundNumber,         // 1. Race No
+      new Date(),          // 2. Date
+      driverName,          // 3. Driver Name
+      team,                // 4. Team
+      carName,             // 5. Car
+      trackName,           // 6. Track
+      circuit,             // 7. Circuit
+      direction,           // 8. Direction
+      raceLevel,           // 9. Race Level
+      chances,             // 10. Chances
+      position,            // 11. Position
+      points,              // 12. Points
+      disciplinaryPoints   // 13. Disciplinary
+    ]);
+
+    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    console.error(error);
+    return ContentService.createTextOutput("Error: " + error).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+

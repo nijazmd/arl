@@ -1,5 +1,5 @@
 const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv";
-const driversSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?output=csv"; // Driver-Team sheet
+const driversSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?output=csv";
 
 const driverStats = {}; // Will hold statistics for each driver
 const driverTeams = {}; // Map driver -> team
@@ -14,16 +14,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function loadDriverTeams() {
   try {
     const response = await fetch(driversSheetURL);
-    const data = await response.text();
-    const rows = data.split("\n").slice(1); // skip header
+    const text = await response.text();
+    const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, '').trim()));
+    const headers = rows[0];
+    const col = name => headers.indexOf(name);
 
-    rows.forEach(row => {
-      const cols = row.split(",");
-      const driverName = cols[0]?.replace(/"/g, '').trim();
-      const teamName = cols[1]?.replace(/"/g, '').trim();
-      if (driverName) {
-        driverTeams[driverName] = teamName || "Unknown";
-      }
+    rows.slice(1).forEach(row => {
+      const driverName = row[col("PlayerName")] || "";
+      const teamName = row[col("Team")] || "Unknown";
+      if (driverName) driverTeams[driverName] = teamName;
     });
   } catch (error) {
     console.error("Error loading driver teams:", error);
@@ -32,58 +31,50 @@ async function loadDriverTeams() {
 
 // Load race results and calculate stats
 async function loadDriverStats() {
-    try {
-      const response = await fetch(raceResultsSheetURL);
-      const data = await response.text();
-      const rows = data.split("\n").slice(1); // skip header
-  
-      rows.forEach(row => {
-        const cols = row.split(",");
-        const driverName = cols[2]?.replace(/"/g, '').trim();
-        const raceLevelRaw = cols[5]?.trim();
-        const points = parseInt(cols[11]?.trim(), 10);
-  
-        if (!driverName) return;
-  
-        if (!driverStats[driverName]) {
-          driverStats[driverName] = {
-            team: driverTeams[driverName] || "Unknown",
-            totalRaces: 0,
-            totalPoints: 0,
-            level1: 0,
-            level2: 0,
-            level3: 0,
-            level4: 0,
-            level5: 0
-          };
-        }
-  
-        const stats = driverStats[driverName];
-  
-        const raceLevel = raceLevelRaw.replace(/\D/g, ""); // Remove non-digits (safety)
-  
-        if (raceLevel) {
-          switch (raceLevel) {
-            case "1": stats.level1++; break;
-            case "2": stats.level2++; break;
-            case "3": stats.level3++; break;
-            case "4": stats.level4++; break;
-            case "5": stats.level5++; break;
-          }
-        }
-  
-        // Count every race regardless of level
-        stats.totalRaces++;
-  
-        if (!isNaN(points)) {
-          stats.totalPoints += points;
-        }
-      });
-    } catch (error) {
-      console.error("Error loading race results:", error);
-    }
+  try {
+    const response = await fetch(raceResultsSheetURL);
+    const text = await response.text();
+    const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, '').trim()));
+    const headers = rows[0];
+    const col = name => headers.indexOf(name);
+
+    rows.slice(1).forEach(row => {
+      const driverName = row[col("DriverName")];
+      const raceLevelRaw = row[col("RaceLevel")] || "";
+      const points = parseInt(row[col("Points")], 10);
+
+      if (!driverName) return;
+
+      if (!driverStats[driverName]) {
+        driverStats[driverName] = {
+          team: driverTeams[driverName] || "Unknown",
+          totalRaces: 0,
+          totalPoints: 0,
+          level1: 0,
+          level2: 0,
+          level3: 0,
+          level4: 0,
+          level5: 0
+        };
+      }
+
+      const stats = driverStats[driverName];
+      const raceLevel = raceLevelRaw.replace(/\D/g, "");
+
+      if (raceLevel) {
+        stats[`level${raceLevel}`] = (stats[`level${raceLevel}`] || 0) + 1;
+      }
+
+      stats.totalRaces++;
+
+      if (!isNaN(points)) {
+        stats.totalPoints += points;
+      }
+    });
+  } catch (error) {
+    console.error("Error loading race results:", error);
   }
-  
+}
 
 // Render the drivers table
 function renderDriverTable() {
@@ -93,9 +84,9 @@ function renderDriverTable() {
   const sortedDrivers = Object.entries(driverStats)
     .sort((a, b) => {
       if (a[1].totalRaces !== b[1].totalRaces) {
-        return a[1].totalRaces - b[1].totalRaces; // Sort by total races (ascending)
+        return a[1].totalRaces - b[1].totalRaces;
       }
-      return a[1].totalPoints - b[1].totalPoints; // If same races, sort by points (ascending)
+      return a[1].totalPoints - b[1].totalPoints;
     });
 
   sortedDrivers.forEach(([driver, stats]) => {

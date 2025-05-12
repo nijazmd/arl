@@ -15,15 +15,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     fetch(raceResultsSheetURL).then(r => r.text())
   ]);
 
-  const carRow = carsCSV.split("\n").slice(1).map(r => r.split(",").map(c => c.replace(/"/g, '').trim()))
-    .find(cols => cols[0] === carParam);
+  const carRows = carsCSV.split("\n").map(row => row.split(",").map(cell => cell.replace(/"/g, '').trim()));
+  const carHeaders = carRows[0];
+  const carData = carRows.slice(1);
+
+  const col = (name) => carHeaders.indexOf(name);
+  const imageColExists = col("ImageURL") !== -1;
+
+  const carRow = carData.find(row => row[col("CarName")] === carParam);
 
   if (!carRow) {
     document.getElementById("car-info").innerHTML = `<p>Car not found in Cars sheet.</p>`;
     return;
   }
 
-  const [carName, carMake, year, pp, type, country, imageUrl] = carRow;
+  const carName = carRow[col("CarName")];
+  const carMake = carRow[col("CarMake")];
+  const year = carRow[col("Year")];
+  const pp = carRow[col("PP")];
+  const type = carRow[col("Type")];
+  const country = carRow[col("Country")];
+  const imageUrl = imageColExists ? carRow[col("ImageURL")] : "";
 
   document.getElementById("car-info").innerHTML = `
     ${imageUrl ? `<img src="${imageUrl}" alt="${carName}" class="car-image-large" />` : ""}
@@ -35,44 +47,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   `;
 
   // Parse stats from RaceResults
-  const raceRows = resultsCSV.split("\n").slice(1).map(r => r.split(",").map(c => c.replace(/"/g, '').trim()));
-  const races = raceRows.filter(row => row[4] === carParam);
+  const raceRows = resultsCSV.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, '').trim()));
+  const headers = raceRows[0];
+  const colRes = (name) => headers.indexOf(name);
+  const dataRows = raceRows.slice(1);
 
+  const races = dataRows.filter(row => row[colRes("Car")] === carParam);
   const totalRaces = races.length;
-  const firstPlaces = races.filter(r => r[8] === "1").length;
-  const podiums = races.filter(r => ["1", "2", "3"].includes(r[8])).length;
-  const avgPos = (races.reduce((sum, r) => sum + parseInt(r[8] || "0"), 0) / totalRaces).toFixed(2);
+  const firstPlaces = races.filter(r => r[colRes("Position")] === "1").length;
+  const podiums = races.filter(r => ["1", "2", "3"].includes(r[colRes("Position")])).length;
+  const avgPos = (races.reduce((sum, r) => sum + parseInt(r[colRes("Position")] || "0"), 0) / totalRaces).toFixed(2);
   const firstPct = ((firstPlaces / totalRaces) * 100).toFixed(1);
   const podiumPct = ((podiums / totalRaces) * 100).toFixed(1);
 
   document.getElementById("car-stats").innerHTML = `
-  <h3>Race Stats</h3>
-  <div class="stat-pairs">
-    <div class="pair">
-      <div class="label">Total Races</div>
-      <div class="value">${totalRaces}</div>
+    <h3>Race Stats</h3>
+    <div class="stat-pairs">
+      <div class="pair"><div class="label">Total Races</div><div class="value">${totalRaces}</div></div>
+      <div class="pair"><div class="label">1st Places</div><div class="value">${firstPlaces}</div></div>
+      <div class="pair"><div class="label">Podiums</div><div class="value">${podiums}</div></div>
+      <div class="pair"><div class="label">Avg. Position</div><div class="value">${avgPos}</div></div>
+      <div class="pair"><div class="label">1st Place %</div><div class="value">${firstPct}%</div></div>
+      <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPct}%</div></div>
     </div>
-    <div class="pair">
-      <div class="label">1st Places</div>
-      <div class="value">${firstPlaces}</div>
-    </div>
-    <div class="pair">
-      <div class="label">Podiums</div>
-      <div class="value">${podiums}</div>
-    </div>
-    <div class="pair">
-      <div class="label">Avg. Position</div>
-      <div class="value">${avgPos}</div>
-    </div>
-    <div class="pair">
-      <div class="label">1st Place %</div>
-      <div class="value">${firstPct}%</div>
-    </div>
-    <div class="pair">
-      <div class="label">Podium %</div>
-      <div class="value">${podiumPct}%</div>
-    </div>
-  </div>
-`;
-
+  `;
 });

@@ -1,30 +1,35 @@
 const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv";
 
 let allRaceData = [];
+let headerMap = {};
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const response = await fetch(raceResultsSheetURL);
     const text = await response.text();
-    const rows = text.split("\n").slice(1).map(r => r.split(","));
+    const [headerLine, ...dataLines] = text.split("\n");
+    const headers = headerLine.split(",").map(h => h.replace(/"/g, "").trim());
 
-    allRaceData = rows.map(row => {
-      const [raceNo, date, driver, team, car, track, raceLevel, chances, position, points] = row.map(cell =>
-        cell.replace(/"/g, '').trim()
-      );
+    headerMap = headers.reduce((acc, name, idx) => {
+      acc[name] = idx;
+      return acc;
+    }, {});
+
+    allRaceData = dataLines.map(row => {
+      const cols = row.split(",").map(cell => cell.replace(/"/g, '').trim());
 
       return {
-        raceNo: parseInt(raceNo, 10),
-        date: formatDate(date, "YYMMDD"),
-        driver,
-        team,
-        car,
-        track,
-        raceLevel,
-        chances,
-        position,
-        points: parseInt(points, 10),
-        rawDate: date
+        raceNo: parseInt(cols[headerMap["RaceNo"]], 10),
+        date: formatDate(cols[headerMap["Date"]]),
+        rawDate: cols[headerMap["Date"]],
+        driver: cols[headerMap["DriverName"]],
+        team: cols[headerMap["Team"]],
+        car: cols[headerMap["Car"]],
+        track: cols[headerMap["Track"]],
+        raceLevel: cols[headerMap["RaceLevel"]],
+        chances: cols[headerMap["Chances"]],
+        position: cols[headerMap["Position"]],
+        points: parseInt(cols[headerMap["Points"]], 10),
       };
     }).filter(r => !isNaN(r.raceNo) && r.driver);
 
@@ -68,52 +73,51 @@ function renderRaceCards(selectedRace) {
 
   container.innerHTML = sorted.map(driver => `
     <div class="race-card">
-  <div class="race-date">${driver.date}</div>
+      <div class="race-date">${driver.date}</div>
 
-  <div class="race-pair">
-    <div class="pair">
-      <div class="label">Driver</div>
-      <div class="value">${driver.driver}</div>
-    </div>
-    <div class="pair">
-      <div class="label">Team</div>
-      <div class="value">${driver.team || "—"}</div>
-    </div>
-  </div>
+      <div class="race-pair">
+        <div class="pair">
+          <div class="label">Driver</div>
+          <div class="value">${driver.driver}</div>
+        </div>
+        <div class="pair">
+          <div class="label">Team</div>
+          <div class="value">${driver.team || "—"}</div>
+        </div>
+      </div>
 
-  <div class="race-pair">
-    <div class="pair">
-      <div class="label">Track</div>
-      <div class="value">${driver.track}</div>
-    </div>
-    <div class="pair">
-      <div class="label">Car</div>
-      <div class="value">${driver.car}</div>
-    </div>
-  </div>
+      <div class="race-pair">
+        <div class="pair">
+          <div class="label">Track</div>
+          <div class="value">${driver.track}</div>
+        </div>
+        <div class="pair">
+          <div class="label">Car</div>
+          <div class="value">${driver.car}</div>
+        </div>
+      </div>
 
-  <div class="race-pair">
-    <div class="pair">
-      <div class="label">Level</div>
-      <div class="value">${driver.raceLevel}</div>
-    </div>
-    <div class="pair">
-      <div class="label">Chances</div>
-      <div class="value">${driver.chances}</div>
-    </div>
-  </div>
+      <div class="race-pair">
+        <div class="pair">
+          <div class="label">Level</div>
+          <div class="value">${driver.raceLevel}</div>
+        </div>
+        <div class="pair">
+          <div class="label">Chances</div>
+          <div class="value">${driver.chances}</div>
+        </div>
+      </div>
 
-  <div class="race-pair">
-    <div class="pair">
-      <div class="label">Position</div>
-      <div class="value">${driver.position}</div>
+      <div class="race-pair">
+        <div class="pair">
+          <div class="label">Position</div>
+          <div class="value">${driver.position}</div>
+        </div>
+        <div class="pair">
+          <div class="label">Points</div>
+          <div class="value dominant">${driver.points}</div>
+        </div>
+      </div>
     </div>
-    <div class="pair">
-      <div class="label">Points</div>
-      <div class="value dominant">${driver.points}</div>
-    </div>
-  </div>
-</div>
-
   `).join("");
 }
