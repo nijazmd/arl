@@ -9,8 +9,23 @@
 </head>
 <body>
 
+
+<div class="car-controls">
+  <div class="sort-options">
+    <label><input type="radio" name="car-sort" value="positionAvg"> Position Avg</label>
+    <label><input type="radio" name="car-sort" value="podiumPct"> Podium %</label>
+    <label><input type="radio" name="car-sort" value="carName"> Car Name</label>
+    <label><input type="radio" name="car-sort" value="makeName"> Make Name</label>
+    <label><input type="radio" name="car-sort" value="totalRaces" checked> Total Races</label>
+    <label><input type="radio" name="car-sort" value="country"> Country</label>
+  </div>
+
+  <input type="text" id="car-search" placeholder="Search car or make..." />
+</div>
+
+<!-- <div id="car-list"></div> -->
+  
   <main>
-    <h1 class="page-title">Cars</h1>
     <div id="car-list" class="car-list-container"></div>
   </main>
 

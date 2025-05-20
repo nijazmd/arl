@@ -684,3 +684,78 @@ input[type="radio"] {
 .third-place td {
   background: rgba(205, 127, 50, 0.1);
 }
+.positionFlag {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.car-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 0 15px;
+  align-items: center;
+}
+
+.car-controls #car-search {
+  width: 100%;
+}
+
+.car-controls select,
+.car-controls input {
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid #888;
+  background: #222;
+  color: #fff;
+}
+
+.car-card.highlight {
+  border: 2px solid gold;
+  box-shadow: 0 0 8px gold;
+}
+
+.badge {
+  margin-left: 6px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+.sort-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sort-options label {
+  background: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 20px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+.sort-options input[type="radio"] {
+  display: none;
+}
+
+.sort-options input[type="radio"]:checked + label,
+.sort-options label:has(input[type="radio"]:checked) {
+  background-color: #444;
+  border-color: #888;
+  font-weight: bold;
+}
+
+.badge {
+  margin-left: 6px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+.car-card.highlight {
+  border: 2px solid gold;
+  box-shadow: 0 0 8px gold;
+}
