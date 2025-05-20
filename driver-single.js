@@ -51,11 +51,14 @@ async function loadDriverStats() {
     const headers = rows[0];
     const col = (name) => headers.indexOf(name);
 
+    const allDrivers = {}; // for ranking
+
     rows.slice(1).forEach(row => {
       const driverName = row[col("DriverName")];
       const raceLevelRaw = row[col("RaceLevel")];
-      const points = parseInt(row[col("Points")], 10);
+      const points = parseInt(row[col("Points")], 10) || 0;
       const finishPosition = parseInt(row[col("Position")], 10);
+      const disciplinary = parseInt(row[col("DisciplinaryPoints")], 10) || 0;
 
       if (!driverName) return;
 
@@ -63,25 +66,36 @@ async function loadDriverStats() {
         driverStats[driverName] = {
           team: driverTeams[driverName] || "Unknown",
           level1: 0, level2: 0, level3: 0, level4: 0, level5: 0,
-          totalRaces: 0, totalPoints: 0,
+          totalRaces: 0, totalPoints: 0, disciplinaryPoints: 0,
           firstPlace: 0, secondPlace: 0, thirdPlace: 0
         };
       }
 
       const stats = driverStats[driverName];
       const raceLevel = raceLevelRaw.replace(/\D/g, "");
-
-      if (raceLevel) {
-        stats[`level${raceLevel}`] = (stats[`level${raceLevel}`] || 0) + 1;
-      }
+      if (raceLevel) stats[`level${raceLevel}`]++;
 
       stats.totalRaces++;
+      stats.totalPoints += points + disciplinary;
+      stats.disciplinaryPoints += disciplinary;
 
-      if (!isNaN(points)) stats.totalPoints += points;
       if (!isNaN(finishPosition)) {
         if (finishPosition === 1) stats.firstPlace++;
         else if (finishPosition === 2) stats.secondPlace++;
         else if (finishPosition === 3) stats.thirdPlace++;
+      }
+
+      allDrivers[driverName] = stats.totalPoints;
+    });
+
+    // Calculate position
+    const ranking = Object.entries(allDrivers)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name);
+
+    ranking.forEach((name, i) => {
+      if (driverStats[name]) {
+        driverStats[name].position = i + 1;
       }
     });
   } catch (error) {
@@ -97,16 +111,20 @@ function renderDriverDetails(driverName) {
   const firstPct = stats.totalRaces ? (stats.firstPlace / stats.totalRaces) * 100 : 0;
   const podiumPct = stats.totalRaces ? (totalPodiums / stats.totalRaces) * 100 : 0;
   const avgPoints = stats.totalRaces ? (stats.totalPoints / stats.totalRaces) : 0;
+  const disciplinaryAvg = stats.totalRaces ? (stats.disciplinaryPoints / stats.totalRaces) : 0;
 
   container.innerHTML = `
     <div class="driver-profile-header">
       <h1 class="driver-name">${driverName}</h1>
       <h2 class="driver-team">${stats.team}</h2>
+      <div class="positionFlag">🏁 ${stats.position}</strong></div>
     </div>
 
     <div class="driver-stat-group">
       <div class="pair"><div class="label">Total Races</div><div class="value">${stats.totalRaces}</div></div>
       <div class="pair"><div class="label">Total Points</div><div class="value">${stats.totalPoints}</div></div>
+      <div class="pair"><div class="label">Total Disciplinary Pts</div><div class="value">${stats.disciplinaryPoints}</div></div>
+      <div class="pair"><div class="label">Disciplinary Pt Avg</div><div class="value">${disciplinaryAvg.toFixed(2)}</div></div>
       <div class="pair"><div class="label">1st Places</div><div class="value">${stats.firstPlace}</div></div>
       <div class="pair"><div class="label">2nd Places</div><div class="value">${stats.secondPlace}</div></div>
       <div class="pair"><div class="label">3rd Places</div><div class="value">${stats.thirdPlace}</div></div>
