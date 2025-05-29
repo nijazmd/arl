@@ -217,9 +217,9 @@ function renderDriverStandings(standings) {
             <td>${index + 1}</td>
             <td><a href="driver-single.html?driver=${encodeURIComponent(item.driver)}">${item.driver}</a></td>
             <td><a href="team.html?team=${encodeURIComponent(driverTeams[item.driver] || "Unknown")}">${driverTeams[item.driver] || "—"}</a></td>
+            <td>${item.races}</td>
             <td>${item.firsts}</td>
             <td>${item.podiums}</td>
-            <td>${item.races}</td>
             <td>${item.points}</td>
           </tr>
         `).join("")}
