@@ -26,10 +26,13 @@ const driverTeams = {};
 function adjustDisciplinary(amount) {
   const input = document.getElementById("disciplinaryPoints");
   if (!input) return;
-  const current = parseInt(input.value || "0", 10);
-  input.value = Math.max(0, current + amount); // prevent negative values
-}
+  let current = parseInt(input.value || "0", 10);
 
+  const newValue = current + amount;
+  if (newValue >= -5 && newValue <= 5) {
+    input.value = newValue;
+  }
+}
 
 function populateSelect(selectId, options) {
   const select = document.getElementById(selectId);
@@ -108,124 +111,145 @@ function updateCircuitDropdown() {
   populateSelect("circuitName", circuits);
 }
 
-
 async function loadStandings() {
-    try {
-        const response = await fetch(raceResultsSheetURL);
-        const data = await response.text();
-        const rows = data.split("\n").slice(1).map(row => row.split(","));
+  try {
+    const response = await fetch(raceResultsSheetURL);
+    const data = await response.text();
+    const rows = data.split("\n").slice(1).map(row => row.split(","));
 
-        const driverPoints = {};
-        const driverRaceCount = {};
+    const driverPoints = {};
+    const driverRaceCount = {};
+    const driverFirsts = {};
+    const driverPodiums = {};
 
-        rows.forEach(row => {
-            const driver = row[columnIndexMap.DriverName]?.replace(/"/g, '').trim();
-            const racePoints = parseInt(row[columnIndexMap.Points], 10);
-            const disciplinaryPoints = parseInt(row[columnIndexMap.DisciplinaryPoints], 10) || 0;
-            const totalPoints = isNaN(racePoints) ? 0 : racePoints + disciplinaryPoints;
+    rows.forEach(row => {
+      const driver = row[columnIndexMap.DriverName]?.replace(/"/g, '').trim();
+      const racePoints = parseInt(row[columnIndexMap.Points], 10);
+      const disciplinaryPoints = parseInt(row[columnIndexMap.DisciplinaryPoints], 10) || 0;
+      const position = parseInt(row[columnIndexMap.Position], 10);
+      const totalPoints = isNaN(racePoints) ? 0 : racePoints + disciplinaryPoints;
 
-            if (!driver || isNaN(totalPoints)) return;
+      if (!driver || isNaN(totalPoints)) return;
 
-            if (!driverPoints[driver]) {
-                driverPoints[driver] = 0;
-                driverRaceCount[driver] = 0;
-            }
+      if (!driverPoints[driver]) {
+        driverPoints[driver] = 0;
+        driverRaceCount[driver] = 0;
+        driverFirsts[driver] = 0;
+        driverPodiums[driver] = 0;
+      }
 
-            driverPoints[driver] += totalPoints;
-            driverRaceCount[driver] += 1;
-        });
+      driverPoints[driver] += totalPoints;
+      driverRaceCount[driver] += 1;
 
-        const driverResponse = await fetch(sheetURL);
-        const driverData = await driverResponse.text();
-        const driverRows = driverData.split("\n").slice(1);
-        driverRows.forEach(row => {
-            const cols = row.split(",");
-            const driverName = cols[0]?.replace(/"/g, '').trim();
-            const teamName = cols[1]?.replace(/"/g, '').trim();
-            if (driverName && teamName) {
-                driverTeams[driverName] = teamName;
-            }
-        });
+      if (position === 1) driverFirsts[driver]++;
+      if (position >= 1 && position <= 3) driverPodiums[driver]++;
+    });
 
-        const teamPoints = {};
-        const teamRaceCount = {};
-        for (const [driver, points] of Object.entries(driverPoints)) {
-            const team = driverTeams[driver] || "Unknown Team";
-            if (!teamPoints[team]) {
-                teamPoints[team] = 0;
-                teamRaceCount[team] = 0;
-            }
-            teamPoints[team] += points;
-            teamRaceCount[team] += driverRaceCount[driver] || 0;
-        }
+    const driverResponse = await fetch(sheetURL);
+    const driverData = await driverResponse.text();
+    const driverRows = driverData.split("\n").slice(1);
+    driverRows.forEach(row => {
+      const cols = row.split(",");
+      const driverName = cols[0]?.replace(/"/g, '').trim();
+      const teamName = cols[1]?.replace(/"/g, '').trim();
+      if (driverName && teamName) {
+        driverTeams[driverName] = teamName;
+      }
+    });
 
-        const sortedDrivers = Object.entries(driverPoints)
-            .sort((a, b) => b[1] - a[1])
-            .map(([driver, points]) => ({
-                driver,
-                points,
-                races: driverRaceCount[driver] || 0
-            }));
+    const teamPoints = {};
+    const teamRaceCount = {};
+    const teamFirsts = {};
+    const teamPodiums = {};
 
-        const sortedTeams = Object.entries(teamPoints)
-            .sort((a, b) => b[1] - a[1])
-            .map(([team, points]) => ({
-                team,
-                points,
-                races: teamRaceCount[team] || 0
-            }));
-
-        renderDriverStandings(sortedDrivers);
-        renderTeamStandings(sortedTeams);
-
-    } catch (error) {
-        console.error("Error loading standings:", error);
+    for (const [driver, points] of Object.entries(driverPoints)) {
+      const team = driverTeams[driver] || "Unknown Team";
+      if (!teamPoints[team]) {
+        teamPoints[team] = 0;
+        teamRaceCount[team] = 0;
+        teamFirsts[team] = 0;
+        teamPodiums[team] = 0;
+      }
+      teamPoints[team] += points;
+      teamRaceCount[team] += driverRaceCount[driver] || 0;
+      teamFirsts[team] += driverFirsts[driver] || 0;
+      teamPodiums[team] += driverPodiums[driver] || 0;
     }
+
+    const sortedDrivers = Object.entries(driverPoints)
+      .sort((a, b) => b[1] - a[1])
+      .map(([driver, points]) => ({
+        driver,
+        points,
+        races: driverRaceCount[driver] || 0,
+        firsts: driverFirsts[driver] || 0,
+        podiums: driverPodiums[driver] || 0
+      }));
+
+    const sortedTeams = Object.entries(teamPoints)
+      .sort((a, b) => b[1] - a[1])
+      .map(([team, points]) => ({
+        team,
+        points,
+        races: teamRaceCount[team] || 0,
+        firsts: teamFirsts[team] || 0,
+        podiums: teamPodiums[team] || 0
+      }));
+
+    renderDriverStandings(sortedDrivers);
+    renderTeamStandings(sortedTeams);
+
+  } catch (error) {
+    console.error("Error loading standings:", error);
+  }
 }
 
 function renderDriverStandings(standings) {
-    const container = document.getElementById("driver-standings");
-    container.innerHTML = `
-        <table>
-            <thead>
-                <tr><th>R</th><th>Dr</th><th>T</th><th>G</th><th>Pts</th></tr>
-            </thead>
-            <tbody>
-                ${standings.map((item, index) => `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><a href="driver-single.html?driver=${encodeURIComponent(item.driver)}">${item.driver}</a></td>
-                        <td><a href="team.html?team=${encodeURIComponent(driverTeams[item.driver] || "Unknown")}">${driverTeams[item.driver] || "—"}</a></td>
-                        <td>${item.races}</td>
-                        <td>${item.points}</td>
-                    </tr>
-                `).join("")}
-            </tbody>
-        </table>
-    `;
+  const container = document.getElementById("driver-standings");
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr><th>R</th><th>Dr</th><th>T</th><th>G</th><th>🏆</th><th>Pod</th><th>Pts</th></tr>
+      </thead>
+      <tbody>
+        ${standings.map((item, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td><a href="driver-single.html?driver=${encodeURIComponent(item.driver)}">${item.driver}</a></td>
+            <td><a href="team.html?team=${encodeURIComponent(driverTeams[item.driver] || "Unknown")}">${driverTeams[item.driver] || "—"}</a></td>
+            <td>${item.firsts}</td>
+            <td>${item.podiums}</td>
+            <td>${item.races}</td>
+            <td>${item.points}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
 
 function renderTeamStandings(standings) {
-    const container = document.getElementById("team-standings");
-    container.innerHTML = `
-        <table>
-            <thead>
-                <tr><th>R</th><th>Tm</th><th>G</th><th>Pts</th></tr>
-            </thead>
-            <tbody>
-                ${standings.map((item, index) => `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><a href="team.html?team=${encodeURIComponent(item.team)}">${item.team}</a></td>
-                        <td>${item.races}</td>
-                        <td>${item.points}</td>
-                    </tr>
-                `).join("")}
-            </tbody>
-        </table>
-    `;
+  const container = document.getElementById("team-standings");
+  container.innerHTML = `
+    <table>
+      <thead>
+        <tr><th>R</th><th>Tm</th><th>G</th><th>🏆</th><th>Pod</th><th>Pts</th></tr>
+      </thead>
+      <tbody>
+        ${standings.map((item, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td><a href="team.html?team=${encodeURIComponent(item.team)}">${item.team}</a></td>
+            <td>${item.races}</td>
+            <td>${item.firsts}</td>
+            <td>${item.podiums}</td>
+            <td>${item.points}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   const currentRoundDisplay = document.getElementById("currentRoundDisplay");
@@ -237,7 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
     loadStandings();
   }
 
-  // For add.html page
   if (document.getElementById("raceForm")) {
     populateDriverDropdown();
     populateCarDropdown();
@@ -261,35 +284,33 @@ async function submitRaceResult(event) {
   const position = formData.get("position");
   const disciplinaryPoints = formData.get("disciplinaryPoints");
 
-    if (!driverName || !carName || !trackName || !circuitName || !direction || !raceLevel || !chances || !position) {
-
+  if (!driverName || !carName || !trackName || !circuitName || !direction || !raceLevel || !chances || !position) {
     alert("Please fill in all required fields.");
     return;
   }
 
   const points = calculatePoints(position, chances);
   function calculatePoints(position, chances) {
-  const pointsTable = {
-    1: { 1: 54, 2: 44, 3: 36, 4: 30, 5: 24 },
-    2: { 1: 27, 2: 22, 3: 18, 4: 15, 5: 12 },
-    3: { 1: 20, 2: 16, 3: 12, 4: 10, 5: 8 },
-    4: { 1: 11, 2: 8, 3: 6, 4: 4, 5: 2 },
-    5: { 1: 8, 2: 5, 3: 3, 4: 2, 5: 1 }
-  };
+    const pointsTable = {
+      1: { 1: 54, 2: 44, 3: 36, 4: 30, 5: 24 },
+      2: { 1: 27, 2: 22, 3: 18, 4: 15, 5: 12 },
+      3: { 1: 20, 2: 16, 3: 12, 4: 10, 5: 8 },
+      4: { 1: 11, 2: 8, 3: 6, 4: 4, 5: 2 },
+      5: { 1: 8, 2: 5, 3: 3, 4: 2, 5: 1 }
+    };
 
-  const pos = parseInt(position, 10);
-  const chance = parseInt(chances, 10);
+    const pos = parseInt(position, 10);
+    const chance = parseInt(chances, 10);
 
-  return (pointsTable[pos] && pointsTable[pos][chance]) ? pointsTable[pos][chance] : 0;
-}
-
+    return (pointsTable[pos] && pointsTable[pos][chance]) ? pointsTable[pos][chance] : 0;
+  }
 
   formData.append("points", points);
 
   try {
     await fetch(webAppUrl, {
       method: "POST",
-      mode: "no-cors", // prevent CORS issues
+      mode: "no-cors",
       body: formData
     });
 

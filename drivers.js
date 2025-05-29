@@ -55,7 +55,8 @@ async function loadDriverStats() {
           level2: 0,
           level3: 0,
           level4: 0,
-          level5: 0
+          level5: 0,
+          level6: 0
         };
       }
 
@@ -105,6 +106,7 @@ function renderDriverTable() {
       <td>${stats.level3}</td>
       <td>${stats.level4}</td>
       <td>${stats.level5}</td>
+      <td>${stats.level6}</td>
     `;
     tbody.appendChild(row);
   });
