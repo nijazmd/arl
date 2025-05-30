@@ -114,26 +114,39 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("circuit-list").innerHTML = `<h3>Circuits</h3>${circuitHTML.join("")}<h3>Stats by Circuit</h3>${byCircuitHTML}`;
 
   document.querySelectorAll(".rate-link").forEach(link => {
-    link.addEventListener("click", e => {
+    link.addEventListener("click", async (e) => {
       e.preventDefault();
-      const circuit = e.target.dataset.circuit;
-      const newRating = window.prompt(`Enter new rating for ${circuit}:`, "");
-
+      const circuitName = e.target.dataset.circuit;
+      const trackName = trackParam; // from the URL
+      const newRating = prompt(`Enter new rating for ${circuitName}:`);
       if (!newRating) return;
-      fetch(webAppUrl, {
-        method: "POST",
-        body: new URLSearchParams({
-          mode: "rate",
-          circuitName: circuit,
-          trackName: trackParam,
-          rating: newRating
-        })
-      }).then(() => {
-        document.getElementById("rating-" + circuit).textContent = newRating;
+  
+      try {
+        const response = await fetch(webAppUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({
+            mode: "rate",
+            trackName: trackName,
+            circuitName: circuitName,
+            rating: newRating
+          }).toString()
+        });
+  
+        if (!response.ok) throw new Error("Failed to update rating");
+  
+        document.getElementById("rating-" + circuitName).textContent = newRating;
         alert("Rating updated!");
-      }).catch(() => alert("Failed to update rating."));
+      } catch (error) {
+        console.error("Rating update error:", error);
+        alert("Failed to update rating.");
+      }
     });
   });
+  
+  
 
   const rowsHTML = recent.map(r => {
     const driver = r[rCol("DriverName")] || "—";
