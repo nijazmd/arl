@@ -29,6 +29,33 @@ function doGet(e) {
 
 function doPost(e) {
   try {
+    const mode = e.parameter.mode;
+
+    if (mode === "rate") {
+      const carName = e.parameter.carName;
+      const newRating = e.parameter.rating;
+
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Cars");
+      const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const carNameCol = headers.indexOf("CarName");
+      const ratingCol = headers.indexOf("Rating");
+
+      if (carNameCol === -1 || ratingCol === -1) {
+        throw new Error("Missing CarName or Rating column in Cars sheet");
+      }
+
+      const rowIndex = data.findIndex(row => row[carNameCol] === carName);
+      if (rowIndex === -1) {
+        throw new Error("Car not found: " + carName);
+      }
+
+      sheet.getRange(rowIndex + 2, ratingCol + 1).setValue(newRating);
+
+      return ContentService.createTextOutput("Rating updated").setMimeType(ContentService.MimeType.TEXT);
+    }
+
+    // Your existing logic for RaceResults
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("RaceResults");
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     const data = e.parameter;
@@ -36,7 +63,7 @@ function doPost(e) {
     const values = headers.map(header => {
       switch (header.trim()) {
         case 'RaceNo': return data.roundNumber || '';
-        case 'Date': return new Date(); // always current date
+        case 'Date': return new Date();
         case 'DriverName': return data.driverName || '';
         case 'Team': return data.team || '';
         case 'Car': return data.carName || '';
@@ -69,5 +96,7 @@ function doPost(e) {
       .setHeader("Access-Control-Allow-Headers", "Content-Type");
   }
 }
+
+
 
 

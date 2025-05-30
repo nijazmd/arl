@@ -93,7 +93,7 @@ async function loadAndRenderCars() {
     });
     
 
-    renderCarCards("totalRaces");
+    renderCarCards("rating");
   } catch (error) {
     console.error("Failed to load car data:", error);
     carListContainer.innerHTML = "<p>Failed to load car data.</p>";
@@ -149,7 +149,7 @@ function renderCarCards(sortOption) {
         <div class="car-info">
           <div class="car-make">${car.carMake}</div>
           <div class="car-name">
-            <a href="car-single.html?car=${encodeURIComponent(car.carName)}">${car.carName} ${car.year}</a>
+            <a href="car-single.html?car=${encodeURIComponent(car.carName)}">${car.carName}</a>
             ${isTrophy ? '<span class="badge">🏆</span>' : ''}
           </div>
           <div class="info-row">

@@ -118,9 +118,8 @@ function renderTrackCards(tracks, sortBy = "rating") {
   trackListContainer.innerHTML = tracks.map(track => `
     <div class="car-card">
       <div class="car-info">
-        <div class="car-make">${track.name}</div>
         <div class="car-name">
-          <a href="track-single.html?track=${encodeURIComponent(track.name)}">${track.circuits}</a>
+          <a href="track-single.html?track=${encodeURIComponent(track.name)}">${track.name}</a>
         </div>
         <div class="car-meta">Country: ${track.country || "—"}</div>
         <div class="car-meta">Distance: ${track.distance}</div>

@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("car-info").innerHTML = `
     ${imageUrl ? `<img src="${imageUrl}" alt="${carName}" class="car-image-large" />` : ""}
     <div><span class="label">Make:</span> <span class="value">${carMake}</span></div>
-    <div><span class="label">Name:</span> <span class="value">${carName} ${year}</span></div>
+    <div><span class="label">Name:</span> <span class="value">${carName}</span></div>
     <div><span class="label">PP:</span> <span class="value">${pp}</span></div>
     <div><span class="label">Type:</span> <span class="value">${type || "—"}</span></div>
     <div><span class="label">Country:</span> <span class="value">${country || "—"}</span></div>

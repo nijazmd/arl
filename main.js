@@ -71,13 +71,7 @@ async function populateCarDropdown() {
     const col = name => headers.indexOf(name);
 
     const carNames = rows.slice(1)
-      .map(row => {
-        const carName = row[col("CarName")];
-        const year = row[col("Year")];
-        if (!carName) return null;
-        const shortYear = year ? `'${year.slice(-2)}` : "";
-        return `${carName} ${shortYear}`;
-      })
+      .map(row => row[col("CarName")])
       .filter(Boolean);
 
     populateSelect("carName", carNames);
@@ -85,6 +79,7 @@ async function populateCarDropdown() {
     console.error("Failed to populate cars:", err);
   }
 }
+
 
 
 const trackToCircuits = {};

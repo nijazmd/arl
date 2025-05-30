@@ -2,26 +2,36 @@
 const trackParam = new URLSearchParams(window.location.search).get("track");
 const tracksSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2013785235&single=true&output=csv";
 const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv";
+const driversSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=1967915476&single=true&output=csv";
 
 const webAppUrl = "https://script.google.com/macros/s/AKfycbwLxrhusbzSJWL3kuHtG0x_gdjyjzFF8RBu3HipatIlpgy_Sa2HwUu-EuFbG6m5J1Lc7A/exec";
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (!trackParam) return;
-  document.body.style.padding = "1rem 1rem 5rem"; // bottom padding for nav bar
+  document.body.style.padding = "1rem 1rem 5rem";
   document.getElementById("track-name-heading").textContent = decodeURIComponent(trackParam);
 
-  const [tracksText, raceText] = await Promise.all([
+  const [tracksText, raceText, driversText] = await Promise.all([
     fetch(tracksSheetURL).then(r => r.text()),
-    fetch(raceResultsSheetURL).then(r => r.text())
+    fetch(raceResultsSheetURL).then(r => r.text()),
+    fetch(driversSheetURL).then(r => r.text())
   ]);
 
   const tracks = tracksText.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, '').trim()));
   const races = raceText.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, '').trim()));
+  const drivers = driversText.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, '').trim()));
 
   const tHead = tracks[0], tRows = tracks.slice(1);
   const rHead = races[0], rRows = races.slice(1);
+  const dHead = drivers[0], dRows = drivers.slice(1);
   const tCol = name => tHead.indexOf(name);
   const rCol = name => rHead.indexOf(name);
+  const dCol = name => dHead.indexOf(name);
+
+  const driverToTeam = {};
+  dRows.forEach(r => {
+    driverToTeam[r[dCol("Driver")]] = r[dCol("Team")];
+  });
 
   const circuits = tRows.filter(r => r[tCol("TrackName")] === trackParam);
   const circuitHTML = [];
@@ -73,26 +83,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   const podiumPct = totalRaces ? ((podiums / totalRaces) * 100).toFixed(1) : "0.0";
 
   document.getElementById("track-stats").innerHTML = `
-  <h3>Race Stats</h3>
-  <div class="info-card">
-    <div class="stat-pairs">
-      <div class="pair"><div class="label">Total Races</div><div class="value">${totalRaces}</div></div>
-      <div class="pair"><div class="label">1st Places</div><div class="value">${firsts}</div></div>
-      <div class="pair"><div class="label">Podiums</div><div class="value">${podiums}</div></div>
-      <div class="pair"><div class="label">Avg. Position</div><div class="value">${avgPos}</div></div>
-      <div class="pair"><div class="label">1st Place %</div><div class="value">${firstPct}%</div></div>
-      <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPct}%</div></div>
+    <h3>Race Stats</h3>
+    <div class="info-card">
+      <div class="stat-pairs">
+        <div class="pair"><div class="label">Total Races</div><div class="value">${totalRaces}</div></div>
+        <div class="pair"><div class="label">1st Places</div><div class="value">${firsts}</div></div>
+        <div class="pair"><div class="label">Podiums</div><div class="value">${podiums}</div></div>
+        <div class="pair"><div class="label">Avg. Position</div><div class="value">${avgPos}</div></div>
+        <div class="pair"><div class="label">1st Place %</div><div class="value">${firstPct}%</div></div>
+        <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPct}%</div></div>
+      </div>
     </div>
-  </div>
-`;
-
+  `;
 
   const byCircuitHTML = Object.entries(byCircuitStats).map(([name, s]) => {
     const avg = s.valid ? (s.posSum / s.valid).toFixed(2) : "—";
     const fPct = s.races ? ((s.firsts / s.races) * 100).toFixed(1) : "0.0";
     const pPct = s.races ? ((s.podiums / s.races) * 100).toFixed(1) : "0.0";
-    return `<div class="info-card">
-      <div class="label">${name}</div>
+    return `<div class="info-card stat-pairs">
+      <div class="pair"><span class="label">Circuit:</span> <span class="value">${name}</span></div>
       <div class="pair"><span class="label">Total:</span> <span class="value">${s.races}</span></div>
       <div class="pair"><span class="label">1st Places:</span> <span class="value">${s.firsts}</span></div>
       <div class="pair"><span class="label">Podiums:</span> <span class="value">${s.podiums}</span></div>
@@ -126,24 +135,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  const rowsHTML = recent.map(r => `
+  const rowsHTML = recent.map(r => {
+    const driver = r[rCol("DriverName")] || "—";
+    const team = driverToTeam[driver] || "—";
+    const car = r[rCol("Car")] || "—";
+    return `
     <tr>
       <td>${r[rCol("Position")] || "—"}</td>
       <td>${r[rCol("Circuit")] || "—"}</td>
       <td>${r[rCol("Chances")] || "—"}</td>
       <td>${r[rCol("RaceLevel")] || "—"}</td>
       <td>${r[rCol("RaceNo")] || "—"}</td>
-      <td>${r[rCol("DriverName")] || "—"}</td>
-      <td>${r[rCol("Team")] || "—"}</td>
+      <td>${driver}</td>
+      <td>${team}</td>
+      <td>${car}</td>
       <td>${r[rCol("Date")] || "—"}</td>
-    </tr>
-  `).join("");
+    </tr>`;
+  }).join("");
 
   document.getElementById("recent-races").innerHTML = `
     <h3>Recent Races</h3>
     <div class="table-container">
       <table class="race-table">
-        <thead><tr><th>Pos</th><th>Circuit</th><th>Chances</th><th>Lvl</th><th>Round</th><th>Driver</th><th>Team</th><th>Date</th></tr></thead>
+        <thead><tr><th>Pos</th><th>Circuit</th><th>Chances</th><th>Lvl</th><th>Round</th><th>Driver</th><th>Team</th><th>Car</th><th>Date</th></tr></thead>
         <tbody>${rowsHTML}</tbody>
       </table>
     </div>
