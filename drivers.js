@@ -42,10 +42,12 @@ async function loadDriverStats() {
     rows.slice(1).forEach(row => {
       const driverName = row[col("DriverName")];
       const raceLevelRaw = row[col("RaceLevel")] || "";
-      const points = parseInt(row[col("Points")], 10);
-
+      const points = parseInt(row[col("Points")], 10) || 0;
+      const disciplinary = parseInt(row[col("DisciplinaryPoints")], 10) || 0;
+      const totalPoints = points + disciplinary;
+    
       if (!driverName) return;
-
+    
       if (!driverStats[driverName]) {
         driverStats[driverName] = {
           team: driverTeams[driverName] || "Unknown",
@@ -59,20 +61,18 @@ async function loadDriverStats() {
           level6: 0
         };
       }
-
+    
       const stats = driverStats[driverName];
       const raceLevel = raceLevelRaw.replace(/\D/g, "");
-
+    
       if (raceLevel) {
         stats[`level${raceLevel}`] = (stats[`level${raceLevel}`] || 0) + 1;
       }
-
+    
       stats.totalRaces++;
-
-      if (!isNaN(points)) {
-        stats.totalPoints += points;
-      }
+      stats.totalPoints += totalPoints;
     });
+    
   } catch (error) {
     console.error("Error loading race results:", error);
   }
