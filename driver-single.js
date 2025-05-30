@@ -134,6 +134,15 @@ function renderDriverDetails(driverName) {
       <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPct.toFixed(1)}%</div></div>
     </div>
   `;
+
+  document.getElementById("level-total").textContent = stats.totalRaces;
+document.getElementById("level-1").textContent = stats.level1 || 0;
+document.getElementById("level-2").textContent = stats.level2 || 0;
+document.getElementById("level-3").textContent = stats.level3 || 0;
+document.getElementById("level-4").textContent = stats.level4 || 0;
+document.getElementById("level-5").textContent = stats.level5 || 0;
+document.getElementById("level-6").textContent = stats.level6 || 0;
+
 }
 
 async function loadDriverRaceHistory(driverName) {
@@ -151,7 +160,8 @@ async function loadDriverRaceHistory(driverName) {
       track: row[col("Track")],
       chances: row[col("Chances")],
       position: row[col("Position")],
-      points: row[col("Points")]
+      points: row[col("Points")],
+      level: row[col("RaceLevel")]
     }));
 
     driverRaces.sort((a, b) => parseInt(b.round) - parseInt(a.round));
@@ -174,6 +184,7 @@ function renderDriverRaceHistory(driverRaces) {
         <th>Round</th>
         <th>Position</th>
         <th>Chances</th>
+        <th>Level</th>
         <th>Car</th>
         <th>Track</th>
         <th>Date</th>
@@ -191,6 +202,7 @@ function renderDriverRaceHistory(driverRaces) {
         <td>${race.round}</td>
         <td>${race.position}</td>
         <td>${race.chances}</td>
+        <td>${race.level}</td>
         <td>${race.car}</td>
         <td>${race.track}</td>
         <td>${race.date}</td>
@@ -198,7 +210,7 @@ function renderDriverRaceHistory(driverRaces) {
   }).join("");
 
   table.innerHTML = thead + `<tbody>${tbody}</tbody>`;
-  container.appendChild(document.createElement("hr"));
+  // container.appendChild(document.createElement("hr"));
   container.appendChild(Object.assign(document.createElement("h2"), { textContent: "Race History" }));
   container.appendChild(table);
 }
