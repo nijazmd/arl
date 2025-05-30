@@ -108,7 +108,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     link.addEventListener("click", e => {
       e.preventDefault();
       const circuit = e.target.dataset.circuit;
-      const newRating = prompt(`Enter new rating for ${circuit}:`);
+      const newRating = window.prompt(`Enter new rating for ${circuit}:`, "");
+
       if (!newRating) return;
       fetch(webAppUrl, {
         method: "POST",
