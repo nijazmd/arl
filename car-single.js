@@ -71,4 +71,41 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPct}%</div></div>
     </div>
   `;
+
+  const rating = carRow[col("Rating")] || "—";
+
+// Check if the car has done at least one Level 5 race
+const hasLevel5Race = races.some(r => r[colRes("RaceLevel")] === "5");
+
+const ratingClass = hasLevel5Race ? "rating-bright" : "rating-muted";
+
+const ratingDiv = document.createElement("div");
+ratingDiv.innerHTML = `
+  <span class="label">Rating:</span>
+  <span id="car-rating" class="${ratingClass}">${rating}</span>
+  <a href="#" id="rate-link" class="rate-link">rate</a>
+`;
+document.getElementById("car-info").appendChild(ratingDiv);
+
+document.getElementById("rate-link").addEventListener("click", (e) => {
+  e.preventDefault();
+  const newRating = prompt("Enter new rating for this car:");
+  if (!newRating) return;
+
+  // POST to your Google Apps Script backend (requires implementation)
+  const webAppUrl = "https://script.google.com/macros/s/AKfycbwLxrhusbzSJWL3kuHtG0x_gdjyjzFF8RBu3HipatIlpgy_Sa2HwUu-EuFbG6m5J1Lc7A/exec";
+
+fetch(webAppUrl, {
+  method: "POST",
+  body: new URLSearchParams({
+    mode: "rate",        // tells doPost this is a rating update
+    carName: carParam,
+    rating: newRating
+  })
+}).then(() => {
+    document.getElementById("car-rating").textContent = newRating;
+    alert("Rating updated!");
+  }).catch(() => alert("Failed to update rating."));
+});
+
 });

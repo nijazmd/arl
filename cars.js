@@ -52,16 +52,19 @@ async function loadAndRenderCars() {
     raceData.forEach(row => {
       const car = row[raceCol("Car")];
       const pos = parseInt(row[raceCol("Position")], 10);
+      const dp = parseFloat(row[raceCol("DisciplinaryPoints")]) || 0;
       if (!car) return;
 
-      if (!raceStats[car]) raceStats[car] = { total: 0, podiums: 0, positionSum: 0, validPositions: 0 };
+      if (!raceStats[car]) raceStats[car] = { total: 0, podiums: 0, positionSum: 0, validPositions: 0, disciplinary: 0 };
       raceStats[car].total++;
       if ([1, 2, 3].includes(pos)) raceStats[car].podiums++;
       if (!isNaN(pos)) {
         raceStats[car].positionSum += pos;
         raceStats[car].validPositions++;
       }
+      raceStats[car].disciplinary += dp;
     });
+
 
     carStatsMap = carData.map(row => {
       const carName = row[carCol("CarName")];
@@ -69,18 +72,26 @@ async function loadAndRenderCars() {
       const year = row[carCol("Year")];
       const country = row[carCol("Country")];
       const imageUrl = row[carCol("ImageURL")];
-
-      const stats = raceStats[carName] || { total: 0, podiums: 0, positionSum: 0, validPositions: 0 };
+      const rating = row[carCol("Rating")];
+    
+      const stats = raceStats[carName] || { total: 0, podiums: 0, positionSum: 0, validPositions: 0, disciplinary: 0 };
       const podiumPct = stats.total ? (stats.podiums / stats.total) * 100 : 0;
       const positionAvg = stats.validPositions ? (stats.positionSum / stats.validPositions) : 0;
-
+      const discAvg = stats.total ? (stats.disciplinary / stats.total).toFixed(2) : "0.00";
+    
+      // Level 5 check
+      const hasLevel5Race = raceData.some(row => row[raceCol("Car")] === carName && row[raceCol("RaceLevel")] === "5");
+    
       return {
-        carName, carMake, year, country, imageUrl,
+        carName, carMake, year, country, imageUrl, rating,
         totalRaces: stats.total,
         podiumPct,
-        positionAvg
+        positionAvg,
+        discAvg,
+        hasLevel5Race
       };
     });
+    
 
     renderCarCards("totalRaces");
   } catch (error) {
@@ -120,10 +131,18 @@ function renderCarCards(sortOption) {
     case "country":
       filteredCars.sort((a, b) => a.country.localeCompare(b.country));
       break;
+    case "rating":
+      filteredCars.sort((a, b) => {
+        const ra = parseFloat(a.rating) || 0;
+        const rb = parseFloat(b.rating) || 0;
+        return rb - ra;
+      });
+      break;
   }
 
   const cardsHTML = filteredCars.map(car => {
     const isTrophy = car.podiumPct === 100 && car.totalRaces >= 5;
+    const ratingClass = car.hasLevel5Race ? 'rating-bright' : 'rating-muted';
     return `
       <div class="car-card${isTrophy ? ' highlight' : ''}">
         ${car.imageUrl ? `<img src="${car.imageUrl}" alt="${car.carName}" class="car-image" />` : ""}
@@ -133,10 +152,18 @@ function renderCarCards(sortOption) {
             <a href="car-single.html?car=${encodeURIComponent(car.carName)}">${car.carName} ${car.year}</a>
             ${isTrophy ? '<span class="badge">🏆</span>' : ''}
           </div>
-          <div class="car-meta">Country: ${car.country || "—"}</div>
-          <div class="car-meta">Total Races: ${car.totalRaces}</div>
-          <div class="car-meta">Podium %: ${car.podiumPct.toFixed(1)}%</div>
-          <div class="car-meta">Position Avg: ${car.positionAvg.toFixed(2)}</div>
+          <div class="info-row">
+            <div class="car-meta">Country: ${car.country || "—"}</div>
+            <div class="car-meta">Rating: <span class="${ratingClass}">${car.rating || "—"}</span></div>
+          </div>
+          <div class="info-row">
+            <div class="car-meta">Total Races: ${car.totalRaces}</div>
+            <div class="car-meta">Disciplinary Avg: ${car.discAvg || "0.00"}</div>
+          </div>
+          <div class="info-row">
+            <div class="car-meta">Podium %: ${car.podiumPct.toFixed(1)}%</div>
+            <div class="car-meta">Position Avg: ${car.positionAvg.toFixed(2)}</div>
+          </div>
         </div>
       </div>
     `;
@@ -144,3 +171,4 @@ function renderCarCards(sortOption) {
 
   carListContainer.innerHTML = cardsHTML;
 }
+

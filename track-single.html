@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Track Details</title>
+    <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page-container">
+    <header class="page-header">
+      <h1 id="track-name-heading">Loading...</h1>
+    </header>
+
+    <section id="track-info" class="info-card">
+      <!-- Track info (Country, Distance, Avg Rating) will be injected here -->
+    </section>
+
+    
+   
+    <section id="track-stats" class="info-card">
+        <!-- Track info (Country, Distance, Avg Rating) will be injected here -->
+      </section>
+      <section id="circuit-list" class="info-card">
+        <h3>Circuits</h3>
+        <!-- Per-circuit stats (with rating & edit button) will be added here -->
+    </section>
+
+    <section id="recent-races" class="info-card">
+      <h3>Recent Races</h3>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Circuit</th>
+            <th>Chances</th>
+            <th>Level</th>
+            <th>Round</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="race-table-body">
+          <!-- Rows added by JS -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+  <nav class="bottom-nav">
+    <a href="index.html">🏠</a>
+    <a href="team.html">👥</a>
+    <a href="drivers.html">🛞</a>
+    <a href="tracks.html">🚥</a>
+    <a href="cars.html">🏎️</a>
+    <a href="add.html">➕</a>
+  </nav>
+
+  <script src="track-single.js"></script>
+</body>
+</html>

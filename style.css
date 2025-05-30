@@ -168,6 +168,7 @@ a:hover {
 /* Bottom Navigation */
 .bottom-nav {
   position: fixed;
+  left: 0;
   bottom: 0;
   width: 100%;
   background-color: #1a1830;
@@ -749,6 +750,10 @@ input[type="radio"] {
   font-weight: bold;
 }
 
+#track-sort-options {
+  padding: 0 15px;
+}
+
 .badge {
   margin-left: 6px;
   font-size: 1.2rem;
@@ -758,4 +763,114 @@ input[type="radio"] {
 .car-card.highlight {
   border: 2px solid gold;
   box-shadow: 0 0 8px gold;
+}
+.rating-muted {
+  color: #aaa;
+  font-weight: normal;
+}
+.rating-bright {
+  color: #ffda44;
+  font-weight: bold;
+}
+.rate-link {
+  margin-left: 8px;
+  color: #09f;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.rating-muted {
+  color: #888;
+  font-weight: normal;
+}
+
+.rating-bright {
+  color: #f1c40f;
+  font-weight: bold;
+}
+
+.rate-link {
+  margin-left: 8px;
+  font-size: 0.9em;
+  text-decoration: underline;
+  cursor: pointer;
+  color: #999;
+}
+#track-info .info-card,
+#circuit-list .info-card {
+  background: #1e1e2f;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+#track-info .pair,
+#circuit-list .pair {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+#circuit-list .info-card.single-row {
+  display: flex;
+  flex-direction: column;
+}
+
+#circuit-list .info-card .label {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+#circuit-list .rate-link {
+  margin-left: 0.5rem;
+  color: #7fd8ff;
+  text-decoration: underline;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.race-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: #151520;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.race-table th, .race-table td {
+  padding: 0.6rem;
+  text-align: center;
+  border-bottom: 1px solid #333;
+}
+
+.race-table thead {
+  background-color: #29293f;
+  font-weight: bold;
+}
+
+h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+/* For containing scroll only within the table container */
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Ensure table doesn’t stretch beyond container */
+.race-table {
+  width: 100%;
+  min-width: 600px; /* Optional: adjust to match your column count */
+  border-collapse: collapse;
+}
+
+.race-table th,
+.race-table td {
+  padding: 0.5rem;
+  text-align: left;
+  white-space: nowrap;
 }
