@@ -62,19 +62,20 @@ async function loadData() {
     const position = parseInt(cols[10], 10);
     const points = parseInt(cols[11], 10);
     const disciplinary = parseInt(cols[12], 10) || 0;
-
-
+    const totalPoints = isNaN(points) ? 0 : points + disciplinary;
+    
     if (!driver || isNaN(points)) return;
-
+    
     // Team totals
-    teamPointsMap[team] = (teamPointsMap[team] || 0) + points;
+    teamPointsMap[team] = (teamPointsMap[team] || 0) + totalPoints;
+    
 
     // Driver stats
     if (!driverRaceStats[driver]) {
       driverRaceStats[driver] = { totalPoints: 0, races: 0, firsts: 0, podiums: 0, disciplinary: 0 };
     }
     const stats = driverRaceStats[driver];
-    stats.totalPoints += points;
+    stats.totalPoints += totalPoints;
     stats.disciplinary += disciplinary;
     stats.races += 1;
     if (position === 1) stats.firsts += 1;

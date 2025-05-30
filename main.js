@@ -54,12 +54,21 @@ async function populateDriverDropdown() {
     const headers = rows[0];
     const col = name => headers.indexOf(name);
 
-    const driverNames = rows.slice(1).map(row => row[col("Driver")]).filter(Boolean);
+    const driverNames = rows.slice(1).map(row => {
+      const driver = row[col("Driver")];
+      const team = row[col("Team")];
+      if (driver && team) {
+        driverTeams[driver] = team; // 🔥 populate map
+      }
+      return driver;
+    }).filter(Boolean);
+
     populateSelect("driverName", driverNames);
   } catch (err) {
     console.error("Failed to populate drivers:", err);
   }
 }
+
 
 async function populateCarDropdown() {
   try {
@@ -294,6 +303,9 @@ async function submitRaceResult(event) {
     return;
   }
 
+
+
+
   const points = calculatePoints(position, chances);
   function calculatePoints(position, chances) {
     const pointsTable = {
@@ -311,6 +323,9 @@ async function submitRaceResult(event) {
   }
 
   formData.append("points", points);
+
+  const teamName = driverTeams[driverName] || "Unknown";
+  formData.append("team", teamName);
 
   try {
     await fetch(webAppUrl, {
