@@ -123,7 +123,14 @@ function updateCircuitDropdown() {
   const track = document.getElementById("trackName")?.value || "";
   const circuits = trackToCircuits[track] || [];
   populateSelect("circuitName", circuits);
+
+  // Automatically select the first circuit if available
+  const circuitSelect = document.getElementById("circuitName");
+  if (circuits.length > 0) {
+    circuitSelect.selectedIndex = 1; // index 0 is "Select", 1 is first real option
+  }
 }
+
 
 async function loadStandings() {
   try {
