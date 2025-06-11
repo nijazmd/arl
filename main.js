@@ -218,12 +218,19 @@ async function loadStandings() {
   }
 }
 
+// ...[existing constants and functions unchanged]...
+
 function renderDriverStandings(standings) {
+  standings = standings.map(item => ({
+    ...item,
+    ptsAvg: item.races ? (item.points / item.races) : 0
+  })).sort((a, b) => b.ptsAvg - a.ptsAvg);
+
   const container = document.getElementById("driver-standings");
   container.innerHTML = `
     <table>
       <thead>
-        <tr><th>R</th><th>Dr</th><th>T</th><th>G</th><th>🏆</th><th>Pod</th><th>Pts</th></tr>
+        <tr><th>R</th><th>Dr</th><th>T</th><th>G</th><th>🏆</th><th>Pod</th><th>Pts</th><th>Pts Avg</th></tr>
       </thead>
       <tbody>
         ${standings.map((item, index) => `
@@ -235,6 +242,7 @@ function renderDriverStandings(standings) {
             <td>${item.firsts}</td>
             <td>${item.podiums}</td>
             <td>${item.points}</td>
+            <td>${item.ptsAvg.toFixed(2)}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -243,11 +251,16 @@ function renderDriverStandings(standings) {
 }
 
 function renderTeamStandings(standings) {
+  standings = standings.map(item => ({
+    ...item,
+    ptsAvg: item.races ? (item.points / item.races) : 0
+  })).sort((a, b) => b.ptsAvg - a.ptsAvg);
+
   const container = document.getElementById("team-standings");
   container.innerHTML = `
     <table>
       <thead>
-        <tr><th>R</th><th>Tm</th><th>G</th><th>🏆</th><th>Pod</th><th>Pts</th></tr>
+        <tr><th>R</th><th>Tm</th><th>G</th><th>🏆</th><th>Pod</th><th>Pts</th><th>Pts Avg</th></tr>
       </thead>
       <tbody>
         ${standings.map((item, index) => `
@@ -258,12 +271,14 @@ function renderTeamStandings(standings) {
             <td>${item.firsts}</td>
             <td>${item.podiums}</td>
             <td>${item.points}</td>
+            <td>${item.ptsAvg.toFixed(2)}</td>
           </tr>
         `).join("")}
       </tbody>
     </table>
   `;
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const currentRoundDisplay = document.getElementById("currentRoundDisplay");
