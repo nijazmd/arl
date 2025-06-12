@@ -26,36 +26,65 @@ function doGet(e) {
                .setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
-
 function doPost(e) {
   try {
     const mode = e.parameter.mode;
 
     if (mode === "rate") {
       const carName = e.parameter.carName;
+      const circuitName = e.parameter.circuitName;
+      const trackName = e.parameter.trackName;
       const newRating = e.parameter.rating;
 
-      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Cars");
-      const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
-      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-      const carNameCol = headers.indexOf("CarName");
-      const ratingCol = headers.indexOf("Rating");
+      if (carName) {
+        // Update car rating in Cars sheet
+        const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Cars");
+        const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        const carNameCol = headers.indexOf("CarName");
+        const ratingCol = headers.indexOf("Rating");
 
-      if (carNameCol === -1 || ratingCol === -1) {
-        throw new Error("Missing CarName or Rating column in Cars sheet");
+        if (carNameCol === -1 || ratingCol === -1) {
+          throw new Error("Missing CarName or Rating column in Cars sheet");
+        }
+
+        const rowIndex = data.findIndex(row => row[carNameCol] === carName);
+        if (rowIndex === -1) {
+          throw new Error("Car not found: " + carName);
+        }
+
+        sheet.getRange(rowIndex + 2, ratingCol + 1).setValue(newRating);
+        return ContentService.createTextOutput("Car rating updated").setMimeType(ContentService.MimeType.TEXT);
       }
 
-      const rowIndex = data.findIndex(row => row[carNameCol] === carName);
-      if (rowIndex === -1) {
-        throw new Error("Car not found: " + carName);
+      if (circuitName && trackName) {
+        // Update circuit rating in Tracks sheet
+        const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Tracks");
+        const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+        const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        const trackCol = headers.indexOf("TrackName");
+        const circuitCol = headers.indexOf("Circuit");
+        const ratingCol = headers.indexOf("TrackRating");
+
+        if (trackCol === -1 || circuitCol === -1 || ratingCol === -1) {
+          throw new Error("Missing columns in Tracks sheet");
+        }
+
+        const rowIndex = data.findIndex(row =>
+          row[trackCol] === trackName && row[circuitCol] === circuitName
+        );
+        if (rowIndex === -1) {
+          throw new Error(`Circuit not found: ${trackName} - ${circuitName}`);
+        }
+
+        sheet.getRange(rowIndex + 2, ratingCol + 1).setValue(newRating);
+        return ContentService.createTextOutput("Circuit rating updated").setMimeType(ContentService.MimeType.TEXT);
       }
 
-      sheet.getRange(rowIndex + 2, ratingCol + 1).setValue(newRating);
-
-      return ContentService.createTextOutput("Rating updated").setMimeType(ContentService.MimeType.TEXT);
+      throw new Error("Missing required parameters for rating update");
     }
 
-    // Your existing logic for RaceResults
+    // Handle regular RaceResults submission
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("RaceResults");
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     const data = e.parameter;
