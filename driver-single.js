@@ -51,7 +51,7 @@ async function loadDriverStats() {
     const headers = rows[0];
     const col = (name) => headers.indexOf(name);
 
-    const allDrivers = {}; // for ranking
+    const allDrivers = {};
 
     rows.slice(1).forEach(row => {
       const driverName = row[col("DriverName")];
@@ -59,6 +59,7 @@ async function loadDriverStats() {
       const points = parseInt(row[col("Points")], 10) || 0;
       const finishPosition = parseInt(row[col("Position")], 10);
       const disciplinary = parseInt(row[col("DisciplinaryPoints")], 10) || 0;
+      const chances = parseInt(row[col("Chances")], 10) || 0;
 
       if (!driverName) return;
 
@@ -67,7 +68,8 @@ async function loadDriverStats() {
           team: driverTeams[driverName] || "Unknown",
           level1: 0, level2: 0, level3: 0, level4: 0, level5: 0,
           totalRaces: 0, totalPoints: 0, disciplinaryPoints: 0,
-          firstPlace: 0, secondPlace: 0, thirdPlace: 0
+          firstPlace: 0, secondPlace: 0, thirdPlace: 0,
+          totalChances: 0
         };
       }
 
@@ -78,25 +80,26 @@ async function loadDriverStats() {
       stats.totalRaces++;
       stats.totalPoints += points + disciplinary;
       stats.disciplinaryPoints += disciplinary;
+      stats.totalChances += chances;
 
       if (!isNaN(finishPosition)) {
         if (finishPosition === 1) stats.firstPlace++;
         else if (finishPosition === 2) stats.secondPlace++;
         else if (finishPosition === 3) stats.thirdPlace++;
       }
-
-      allDrivers[driverName] = stats.totalPoints;
     });
 
-    // Calculate position
-    const ranking = Object.entries(allDrivers)
-      .sort((a, b) => b[1] - a[1])
-      .map(([name]) => name);
+    // Compute rank by points average
+    const rankedDrivers = Object.entries(driverStats)
+      .map(([name, stats]) => ({
+        name,
+        avgPoints: stats.totalRaces ? stats.totalPoints / stats.totalRaces : 0
+      }))
+      .sort((a, b) => b.avgPoints - a.avgPoints)
+      .map(d => d.name);
 
-    ranking.forEach((name, i) => {
-      if (driverStats[name]) {
-        driverStats[name].position = i + 1;
-      }
+    rankedDrivers.forEach((name, index) => {
+      if (driverStats[name]) driverStats[name].position = index + 1;
     });
   } catch (error) {
     console.error("Error loading race results:", error);
@@ -112,6 +115,7 @@ function renderDriverDetails(driverName) {
   const podiumPct = stats.totalRaces ? (totalPodiums / stats.totalRaces) * 100 : 0;
   const avgPoints = stats.totalRaces ? (stats.totalPoints / stats.totalRaces) : 0;
   const disciplinaryAvg = stats.totalRaces ? (stats.disciplinaryPoints / stats.totalRaces) : 0;
+  const avgChances = stats.totalRaces ? (stats.totalChances / stats.totalRaces) : 0;
 
   container.innerHTML = `
     <div class="driver-profile-header">
@@ -130,19 +134,19 @@ function renderDriverDetails(driverName) {
       <div class="pair"><div class="label">3rd Places</div><div class="value">${stats.thirdPlace}</div></div>
       <div class="pair"><div class="label">Total Podiums</div><div class="value">${totalPodiums}</div></div>
       <div class="pair"><div class="label">Points Avg.</div><div class="value">${avgPoints.toFixed(2)}</div></div>
+      <div class="pair"><div class="label">Chances per Race</div><div class="value">${avgChances.toFixed(2)}</div></div>
       <div class="pair"><div class="label">1st Place %</div><div class="value">${firstPct.toFixed(1)}%</div></div>
       <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPct.toFixed(1)}%</div></div>
     </div>
   `;
 
   document.getElementById("level-total").textContent = stats.totalRaces;
-document.getElementById("level-1").textContent = stats.level1 || 0;
-document.getElementById("level-2").textContent = stats.level2 || 0;
-document.getElementById("level-3").textContent = stats.level3 || 0;
-document.getElementById("level-4").textContent = stats.level4 || 0;
-document.getElementById("level-5").textContent = stats.level5 || 0;
-document.getElementById("level-6").textContent = stats.level6 || 0;
-
+  document.getElementById("level-1").textContent = stats.level1 || 0;
+  document.getElementById("level-2").textContent = stats.level2 || 0;
+  document.getElementById("level-3").textContent = stats.level3 || 0;
+  document.getElementById("level-4").textContent = stats.level4 || 0;
+  document.getElementById("level-5").textContent = stats.level5 || 0;
+  document.getElementById("level-6").textContent = stats.level6 || 0;
 }
 
 async function loadDriverRaceHistory(driverName) {
@@ -183,6 +187,7 @@ function renderDriverRaceHistory(driverRaces) {
       <tr>
         <th>Round</th>
         <th>Position</th>
+        <th>Points</th>
         <th>Chances</th>
         <th>Level</th>
         <th>Car</th>
@@ -201,6 +206,7 @@ function renderDriverRaceHistory(driverRaces) {
       <tr class="${rowClass}">
         <td>${race.round}</td>
         <td>${race.position}</td>
+        <td>${race.points}</td>
         <td>${race.chances}</td>
         <td>${race.level}</td>
         <td>${race.car}</td>
@@ -210,7 +216,6 @@ function renderDriverRaceHistory(driverRaces) {
   }).join("");
 
   table.innerHTML = thead + `<tbody>${tbody}</tbody>`;
-  // container.appendChild(document.createElement("hr"));
   container.appendChild(Object.assign(document.createElement("h2"), { textContent: "Race History" }));
   container.appendChild(table);
 }
