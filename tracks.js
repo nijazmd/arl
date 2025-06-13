@@ -8,6 +8,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   trackListContainer = document.getElementById("track-list");
 
   const sortRadios = document.querySelectorAll("input[name='track-sort']");
+  const searchInput = document.getElementById("track-search");
+  searchInput.addEventListener("input", () => {
+    const selected = document.querySelector("input[name='track-sort']:checked").value;
+    renderTrackCards(currentTracks, selected);
+  });
+
   sortRadios.forEach(radio =>
     radio.addEventListener("change", () => {
       const selected = document.querySelector("input[name='track-sort']:checked").value;
@@ -101,6 +107,13 @@ async function loadAndRenderTracks() {
 }
 
 function renderTrackCards(tracks, sortBy = "rating") {
+  const searchText = document.getElementById("track-search").value.toLowerCase();
+  tracks = tracks.filter(track =>
+    track.name.toLowerCase().includes(searchText) ||
+    track.country.toLowerCase().includes(searchText) ||
+    track.circuits.toLowerCase().includes(searchText)
+  );
+
   switch (sortBy) {
     case "name":
       tracks.sort((a, b) => a.name.localeCompare(b.name));

@@ -59,6 +59,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const avgPos = (races.reduce((sum, r) => sum + parseInt(r[colRes("Position")] || "0"), 0) / totalRaces).toFixed(2);
   const firstPct = ((firstPlaces / totalRaces) * 100).toFixed(1);
   const podiumPct = ((podiums / totalRaces) * 100).toFixed(1);
+  const totalChances = races.reduce((sum, r) => sum + parseInt(r[colRes("Chances")] || "0"), 0);
+  const chancesPerRace = totalRaces ? (totalChances / totalRaces).toFixed(2) : "0.00";
 
   document.getElementById("car-stats").innerHTML = `
     <h3>Race Stats</h3>
@@ -69,6 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       <div class="pair"><div class="label">Avg. Position</div><div class="value">${avgPos}</div></div>
       <div class="pair"><div class="label">1st Place %</div><div class="value">${firstPct}%</div></div>
       <div class="pair"><div class="label">Podium %</div><div class="value">${podiumPct}%</div></div>
+      <div class="pair"><div class="label">Chances / Race</div><div class="value">${chancesPerRace}</div></div>
     </div>
   `;
 

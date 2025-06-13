@@ -55,13 +55,19 @@ async function loadAndRenderCars() {
       const dp = parseFloat(row[raceCol("DisciplinaryPoints")]) || 0;
       if (!car) return;
 
-      if (!raceStats[car]) raceStats[car] = { total: 0, podiums: 0, positionSum: 0, validPositions: 0, disciplinary: 0 };
+      if (!raceStats[car]) raceStats[car] = { total: 0, podiums: 0, positionSum: 0, validPositions: 0, disciplinary: 0, chancesSum: 0 };
+
       raceStats[car].total++;
       if ([1, 2, 3].includes(pos)) raceStats[car].podiums++;
       if (!isNaN(pos)) {
         raceStats[car].positionSum += pos;
         raceStats[car].validPositions++;
       }
+      const chances = parseInt(row[raceCol("Chances")], 10);
+      if (!isNaN(chances)) {
+        raceStats[car].chancesSum += chances;
+      }
+
       raceStats[car].disciplinary += dp;
     });
 
@@ -78,6 +84,7 @@ async function loadAndRenderCars() {
       const podiumPct = stats.total ? (stats.podiums / stats.total) * 100 : 0;
       const positionAvg = stats.validPositions ? (stats.positionSum / stats.validPositions) : 0;
       const discAvg = stats.total ? (stats.disciplinary / stats.total).toFixed(2) : "0.00";
+      const chancesPerRace = stats.total ? (stats.chancesSum / stats.total).toFixed(2) : "0.00";
     
       // Level 5 check
       const hasLevel5Race = raceData.some(row => row[raceCol("Car")] === carName && row[raceCol("RaceLevel")] === "5");
@@ -88,7 +95,8 @@ async function loadAndRenderCars() {
         podiumPct,
         positionAvg,
         discAvg,
-        hasLevel5Race
+        hasLevel5Race,
+        chancesPerRace
       };
     });
     
@@ -164,6 +172,10 @@ function renderCarCards(sortOption) {
             <div class="car-meta">Podium %: ${car.podiumPct.toFixed(1)}%</div>
             <div class="car-meta">Position Avg: ${car.positionAvg.toFixed(2)}</div>
           </div>
+          <div class="info-row">
+            <div class="car-meta">Chances / Race: ${car.chancesPerRace}</div>
+          </div>
+
         </div>
       </div>
     `;
