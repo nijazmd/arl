@@ -82,6 +82,9 @@ async function loadAndRenderTracks() {
     if (!isNaN(disc)) {
       t.disciplinarySum += disc;
     }
+    if (row[rcol("RaceLevel")] === "5") {
+      t.hasLevel5 = true;
+    }    
   });
 
   const tracks = Object.entries(trackMap).map(([name, t]) => {
@@ -98,7 +101,8 @@ async function loadAndRenderTracks() {
       totalRaces: t.totalRaces,
       podiumPct,
       positionAvg,
-      discAvg
+      discAvg,
+      hasLevel5: t.hasLevel5 || false,
     };
   });
 
@@ -137,8 +141,8 @@ function renderTrackCards(tracks, sortBy = "rating") {
         <div class="car-meta">Country: ${track.country || "—"}</div>
         <div class="car-meta">Distance: ${track.distance}</div>
         <div class="car-meta">
-  Rating: <span class="${track.avgRating >= 7 ? 'rating-bright' : 'rating-muted'}">${track.avgRating}</span>
-</div>
+          Rating: <span class="${track.hasLevel5 ? (track.avgRating >= 7 ? 'rating-bright' : 'rating-muted') : ''}">${track.avgRating}</span>
+        </div>
         <div class="car-meta">Total Races: ${track.totalRaces}</div>
         <div class="car-meta">Disciplinary Avg: ${track.discAvg}</div>
         <div class="car-meta">Podium %: ${track.podiumPct}%</div>
