@@ -136,7 +136,9 @@ function renderTrackCards(tracks, sortBy = "rating") {
         </div>
         <div class="car-meta">Country: ${track.country || "—"}</div>
         <div class="car-meta">Distance: ${track.distance}</div>
-        <div class="car-meta">Rating: ${track.avgRating}</div>
+        <div class="car-meta">
+  Rating: <span class="${track.avgRating >= 7 ? 'rating-bright' : 'rating-muted'}">${track.avgRating}</span>
+</div>
         <div class="car-meta">Total Races: ${track.totalRaces}</div>
         <div class="car-meta">Disciplinary Avg: ${track.discAvg}</div>
         <div class="car-meta">Podium %: ${track.podiumPct}%</div>
