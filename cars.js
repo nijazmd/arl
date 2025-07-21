@@ -1,8 +1,10 @@
+// cars.js
 const carsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2855635&single=true&output=csv";
 const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv";
 
 let carStatsMap = [];
 let carListContainer;
+let allCarRows = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
   carListContainer = document.getElementById("car-list");
@@ -20,6 +22,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   searchInput.addEventListener("input", () => {
     const selected = document.querySelector("input[name='car-sort']:checked").value;
     renderCarCards(selected);
+  });
+
+  document.getElementById("filter-toggle").addEventListener("click", () => {
+    document.getElementById("filter-panel").classList.toggle("hidden");
+  });
+
+  document.getElementById("apply-filters").addEventListener("click", () => {
+    applyFiltersAndRender();
+    document.getElementById("filter-panel").classList.add("hidden");
   });
 
   await loadAndRenderCars();
@@ -53,6 +64,7 @@ async function loadAndRenderCars() {
       const car = row[raceCol("Car")];
       const pos = parseInt(row[raceCol("Position")], 10);
       const dp = parseFloat(row[raceCol("DisciplinaryPoints")]) || 0;
+      const chances = parseInt(row[raceCol("Chances")], 10);
       if (!car) return;
 
       if (!raceStats[car]) raceStats[car] = { total: 0, podiums: 0, positionSum: 0, validPositions: 0, disciplinary: 0, chancesSum: 0 };
@@ -63,14 +75,12 @@ async function loadAndRenderCars() {
         raceStats[car].positionSum += pos;
         raceStats[car].validPositions++;
       }
-      const chances = parseInt(row[raceCol("Chances")], 10);
       if (!isNaN(chances)) {
         raceStats[car].chancesSum += chances;
       }
 
       raceStats[car].disciplinary += dp;
     });
-
 
     carStatsMap = carData.map(row => {
       const carName = row[carCol("CarName")];
@@ -79,16 +89,15 @@ async function loadAndRenderCars() {
       const country = row[carCol("Country")];
       const imageUrl = row[carCol("ImageURL")];
       const rating = row[carCol("Rating")];
-    
-      const stats = raceStats[carName] || { total: 0, podiums: 0, positionSum: 0, validPositions: 0, disciplinary: 0 };
+
+      const stats = raceStats[carName] || { total: 0, podiums: 0, positionSum: 0, validPositions: 0, disciplinary: 0, chancesSum: 0 };
       const podiumPct = stats.total ? (stats.podiums / stats.total) * 100 : 0;
       const positionAvg = stats.validPositions ? (stats.positionSum / stats.validPositions) : 0;
       const discAvg = stats.total ? (stats.disciplinary / stats.total).toFixed(2) : "0.00";
       const chancesPerRace = stats.total ? (stats.chancesSum / stats.total).toFixed(2) : "0.00";
-    
-      // Level 5 check
+
       const hasLevel5Race = raceData.some(row => row[raceCol("Car")] === carName && row[raceCol("RaceLevel")] === "5");
-    
+
       return {
         carName, carMake, year, country, imageUrl, rating,
         totalRaces: stats.total,
@@ -99,7 +108,10 @@ async function loadAndRenderCars() {
         chancesPerRace
       };
     });
-    
+
+    allCarRows = carData;
+    allCarRows.unshift(carHeaders); 
+    generateFilterPanel(carHeaders, carData);
 
     renderCarCards("rating");
   } catch (error) {
@@ -108,11 +120,113 @@ async function loadAndRenderCars() {
   }
 }
 
+function generateFilterPanel(carHeaders, carData) {
+  const filterPanel = document.getElementById("filter-content");
+
+  const rangeFields = ["DriveFeel", "Performance", "Handling", "Design", "shpp", "smpp", "sspp", "rhpp", "rmpp", "rspp", "Year", "Displacement", "Power", "Torque", "Weight"];
+  const checkboxFields = carHeaders.filter(h => !rangeFields.includes(h) && !["CarName", "CarMake", "ImageURL", "VideoURL"].includes(h));
+
+  function createAccordionSection(label, contentHTML) {
+    return `
+      <div class="accordion-section">
+        <div class="accordion-header">${label}</div>
+        <div class="accordion-body">${contentHTML}</div>
+      </div>
+    `;
+  }
+
+  let rangeHTML = "";
+  rangeFields.forEach(field => {
+    const idx = carHeaders.indexOf(field);
+    if (idx === -1) return;
+
+    let values = carData.map(r => parseFloat(r[idx])).filter(v => !isNaN(v));
+    if (!values.length) return;
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+
+    rangeHTML += `
+      <label>${field}</label><br>
+      <input type="number" id="min-${field}" placeholder="Min" value="${min}" style="width: 40%"/> –
+      <input type="number" id="max-${field}" placeholder="Max" value="${max}" style="width: 40%"/><br><br>
+    `;
+  });
+  filterPanel.innerHTML += createAccordionSection("Range Filters", rangeHTML);
+
+  checkboxFields.forEach(field => {
+    const idx = carHeaders.indexOf(field);
+    const counts = {};
+
+    carData.forEach(row => {
+      const val = row[idx] || "Unknown";
+      counts[val] = (counts[val] || 0) + 1;
+    });
+
+    const checkboxes = Object.entries(counts).map(([val, count]) => {
+      const id = `${field}-${val}`.replace(/[^a-zA-Z0-9]/g, "_");
+      return `
+        <label>
+          <input type="checkbox" name="${field}" value="${val}" id="${id}" />
+          ${val} (${count})
+        </label><br>
+      `;
+    }).join("");
+
+    filterPanel.innerHTML += createAccordionSection(field, checkboxes);
+  });
+
+  document.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener("click", () => {
+      const body = header.nextElementSibling;
+      body.classList.toggle("open");
+    });
+  });
+}
+
+function isCarMatchingFilters(car) {
+  const carRow = allCarRows.find(r => r.includes(car.carName));
+  if (!carRow) return true;
+
+  let pass = true;
+
+  const rangeFields = ["DriveFeel", "Performance", "Handling", "Design", "shpp", "smpp", "sspp", "rhpp", "rmpp", "rspp", "Year", "Displacement", "Power", "Torque", "Weight"];
+
+  rangeFields.forEach(field => {
+    const idx = allCarRows[0].indexOf(field);
+    if (idx === -1) return;
+
+    const val = parseFloat(carRow[idx]);
+    const min = parseFloat(document.getElementById(`min-${field}`)?.value);
+    const max = parseFloat(document.getElementById(`max-${field}`)?.value);
+
+    if (!isNaN(min) && val < min) pass = false;
+    if (!isNaN(max) && val > max) pass = false;
+  });
+
+  document.querySelectorAll("input[type='checkbox']:checked").forEach(cb => {
+    const field = cb.name;
+    const val = cb.value;
+    const idx = allCarRows[0].indexOf(field);
+    if (idx === -1) return;
+
+    const valInRow = carRow[idx];
+    if (valInRow !== val) pass = false;
+  });
+
+  return pass;
+}
+
+function applyFiltersAndRender() {
+  const selected = document.querySelector("input[name='car-sort']:checked")?.value || "rating";
+  renderCarCards(selected);
+}
+
 function renderCarCards(sortOption) {
   const searchText = document.getElementById("car-search").value.toLowerCase();
   let filteredCars = [...carStatsMap].filter(car =>
-    car.carName.toLowerCase().includes(searchText) ||
-    car.carMake.toLowerCase().includes(searchText)
+    (car.carName.toLowerCase().includes(searchText) || car.carMake.toLowerCase().includes(searchText)) &&
+    isCarMatchingFilters(car)
   );
 
   const sortWithMinRaceCheck = ['positionAvg', 'podiumPct'];
@@ -151,6 +265,7 @@ function renderCarCards(sortOption) {
   const cardsHTML = filteredCars.map(car => {
     const isTrophy = car.podiumPct === 100 && car.totalRaces >= 5;
     const ratingClass = car.hasLevel5Race ? 'rating-bright' : 'rating-muted';
+
     return `
       <div class="car-card${isTrophy ? ' highlight' : ''}">
         ${car.imageUrl ? `<img src="${car.imageUrl}" alt="${car.carName}" class="car-image" />` : ""}
@@ -175,7 +290,6 @@ function renderCarCards(sortOption) {
           <div class="info-row">
             <div class="car-meta">Chances / Race: ${car.chancesPerRace}</div>
           </div>
-
         </div>
       </div>
     `;
@@ -183,4 +297,3 @@ function renderCarCards(sortOption) {
 
   carListContainer.innerHTML = cardsHTML;
 }
-
