@@ -4,6 +4,7 @@ const currentRoundNumber = 3;
 
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?output=csv";
 const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv";
+const carSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2855635&single=true&output=csv";
 
 const columnIndexMap = {
     RaceNo: 0,
@@ -46,48 +47,49 @@ function populateSelect(selectId, options) {
   });
 }
 
-async function populateDriverDropdown() {
-  try {
-    const response = await fetch(sheetURL);
-    const text = await response.text();
-    const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
-    const headers = rows[0];
-    const col = name => headers.indexOf(name);
+function populateDriverDropdown() {
+  const group = document.getElementById("driverRadioGroup");
+  if (!group) return;
 
-    const driverNames = rows.slice(1).map(row => {
-      const driver = row[col("Driver")];
-      const team = row[col("Team")];
-      if (driver && team) {
-        driverTeams[driver] = team; // 🔥 populate map
-      }
-      return driver;
-    }).filter(Boolean);
+  fetch(sheetURL)
+    .then(res => res.text())
+    .then(text => {
+      const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
+      const headers = rows[0];
+      const col = name => headers.indexOf(name);
 
-    populateSelect("driverName", driverNames);
-  } catch (err) {
-    console.error("Failed to populate drivers:", err);
-  }
+      const drivers = rows.slice(1).map(row => {
+        const driver = row[col("Driver")];
+        const team = row[col("Team")];
+        if (driver && team) driverTeams[driver] = team;
+        return driver;
+      }).filter(Boolean);
+
+      group.innerHTML = drivers.map((driver, index) => {
+        const id = `driver${index}`;
+        return `
+          <input type="radio" name="driverName" value="${driver}" id="${id}" ${index === 0 ? "checked" : ""}>
+          <label for="${id}">${driver}</label>
+        `;
+      }).join("");
+      
+    });
 }
 
 
-async function populateCarDropdown() {
-  try {
-    const carSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2855635&single=true&output=csv";
-    const response = await fetch(carSheetUrl);
-    const text = await response.text();
-    const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
-    const headers = rows[0];
-    const col = name => headers.indexOf(name);
+  function populateCarDropdown() {
+    fetch(carSheetUrl)
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
+        const headers = rows[0];
+        const col = name => headers.indexOf(name);
 
-    const carNames = rows.slice(1)
-      .map(row => row[col("CarName")])
-      .filter(Boolean);
-
-    populateSelect("carName", carNames);
-  } catch (err) {
-    console.error("Failed to populate cars:", err);
+        const cars = rows.slice(1).map(row => row[col("CarName")]).filter(Boolean);
+        const datalist = document.getElementById("carList");
+        datalist.innerHTML = cars.map(car => `<option value="${car}">`).join("");
+      });
   }
-}
 
 
 
@@ -112,7 +114,13 @@ async function populateTrackDropdown() {
       }
     });
 
-    populateSelect("trackName", Object.keys(trackToCircuits));
+    const trackInput = document.getElementById("trackName");
+    const trackList = document.getElementById("trackList");
+    trackList.innerHTML = Object.keys(trackToCircuits)
+      .map(track => `<option value="${track}">`).join("");
+
+    trackInput.addEventListener("change", updateCircuitDropdown);
+
     document.getElementById("trackName")?.addEventListener("change", updateCircuitDropdown);
   } catch (err) {
     console.error("Failed to populate tracks:", err);
@@ -286,6 +294,31 @@ function renderTeamStandings(standings) {
   `;
 }
 
+function adjustRound(delta) {
+  const input = document.getElementById("roundNumber");
+  if (!input) return;
+  let value = parseInt(input.value || "0", 10);
+  input.value = value + delta;
+}
+
+function adjustLaps(delta) {
+  const lapsInput = document.getElementById("laps");
+  if (!lapsInput) return;
+  let val = parseInt(lapsInput.value || "3", 10);
+  val = Math.max(1, val + delta);
+  lapsInput.value = val;
+}
+
+
+async function fetchLastRoundNumber() {
+  const response = await fetch(raceResultsSheetURL);
+  const text = await response.text();
+  const rows = text.trim().split("\n").slice(1);
+  const lastRow = rows[rows.length - 1].split(",");
+  const lastRound = parseInt(lastRow[columnIndexMap.RaceNo], 10) || 0;
+  document.getElementById("roundNumber").value = lastRound;
+
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const currentRoundDisplay = document.getElementById("currentRoundDisplay");
@@ -302,6 +335,14 @@ document.addEventListener("DOMContentLoaded", () => {
     populateCarDropdown();
     populateTrackDropdown();
   }
+
+  if (document.getElementById("raceForm")) {
+    fetchLastRoundNumber();
+    populateDriverDropdown();
+    populateCarDropdown();
+    populateTrackDropdown();
+  }
+  
 });
 
 async function submitRaceResult(event) {
@@ -348,7 +389,17 @@ async function submitRaceResult(event) {
 
   const teamName = driverTeams[driverName] || "Unknown";
   formData.append("team", teamName);
-
+  ["DriveFeel", "Performance", "Handling", "Design"].forEach(field => {
+    const selected = document.querySelector(`input[name="${field.toLowerCase()}"]:checked`);
+    if (selected) formData.append(field, selected.value);
+  });
+  
+  
+  
+  const trackRating = document.querySelector('input[name="trackRating"]:checked')?.value;
+  if (trackRating) formData.append("TrackRating", trackRating);
+  
+  
   try {
     await fetch(webAppUrl, {
       method: "POST",

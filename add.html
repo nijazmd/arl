@@ -14,22 +14,28 @@
 
       <div class="form-group">
         <label for="roundNumber">Round Number:</label>
-        <input type="number" id="roundNumber" name="roundNumber" value="3" required>
-      </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="adjustRound(-1)">−</button>
+          <input type="number" id="roundNumber" name="roundNumber" required>
+          <button type="button" onclick="adjustRound(1)">+</button>
+        </div>
+      </div>      
 
       <div class="form-group">
         <label for="driverName">Driver</label>
-        <select id="driverName" name="driverName" required></select>
+        <div id="driverRadioGroup" class="radio-group"></div>
       </div>
 
       <div class="form-group">
         <label for="carName">Car</label>
-        <select id="carName" name="carName" required></select>
+        <input list="carList" id="carName" name="carName" required />
+        <datalist id="carList"></datalist>
       </div>
 
       <div class="form-group">
         <label for="trackName">Track</label>
-        <select id="trackName" name="trackName" required></select>
+        <input list="trackList" id="trackName" name="trackName" required />
+        <datalist id="trackList"></datalist>
       </div>
 
       <div class="form-group">
@@ -39,59 +45,168 @@
       </div>
 
       <fieldset>
-      <legend>Direction</legend>
-      <div class="radio-group">
-        <label><input type="radio" name="direction" value="Forward" checked="true" required> Forward</label>
-        <label><input type="radio" name="direction" value="Reverse"> Reverse</label>
-      </div>
-    </fieldset>
+        <legend>Direction</legend>
+        <div class="radio-group">
+          <input type="radio" name="direction" value="Forward" id="directionForward" checked="true" required>
+          <label for="directionForward">Forward</label>
 
+          <input type="radio" name="direction" value="Reverse" id="directionReverse">
+          <label for="directionReverse">Reverse</label>
 
+        </div>
+      </fieldset>
+
+      <div class="form-group">
+        <label for="laps">Laps:</label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="adjustLaps(-1)">−</button>
+          <input type="number" name="laps" id="laps" min="1" value="0" required>
+          <button type="button" onclick="adjustLaps(1)">+</button>
+        </div>
+      </div>      
+      
       <fieldset>
         <legend>Race Level</legend>
         <div class="radio-group">
-          <label><input type="radio" name="raceLevel" value="1" checked="true" required> 1</label>
-          <label><input type="radio" name="raceLevel" value="2"> 2</label>
-          <label><input type="radio" name="raceLevel" value="3"> 3</label>
-          <label><input type="radio" name="raceLevel" value="4"> 4</label>
-          <label><input type="radio" name="raceLevel" value="5"> 5</label>
-          <label><input type="radio" name="raceLevel" value="6"> 6</label>
+          <input type="radio" name="raceLevel" value="1" id="raceLevel1" checked="true" required>
+          <label for="raceLevel1">1</label>
+
+          <input type="radio" name="raceLevel" value="2" id="raceLevel2">
+          <label for="raceLevel2">2</label>
+
+          <input type="radio" name="raceLevel" value="3" id="raceLevel3">
+          <label for="raceLevel3">3</label>
+
+          <input type="radio" name="raceLevel" value="4" id="raceLevel4">
+          <label for="raceLevel4">4</label>
+
+          <input type="radio" name="raceLevel" value="5" id="raceLevel5">
+          <label for="raceLevel5">5</label>
+
+          <input type="radio" name="raceLevel" value="6" id="raceLevel6">
+          <label for="raceLevel6">6</label>
+
         </div>
       </fieldset>
 
       <fieldset>
         <legend>Chances</legend>
         <div class="radio-group">
-          <label><input type="radio" name="chances" value="1" checked="true" required> 1</label>
-          <label><input type="radio" name="chances" value="2"> 2</label>
-          <label><input type="radio" name="chances" value="3"> 3</label>
-          <label><input type="radio" name="chances" value="4"> 4</label>
-          <label><input type="radio" name="chances" value="5"> 5</label>
+          <input type="radio" name="chances" value="1" id="chances1" checked="true" required>
+          <label for="chances1">1</label>
+          
+          <input type="radio" name="chances" value="2" id="chances2">
+          <label for="chances2">2</label>
+          
+          <input type="radio" name="chances" value="3" id="chances3">
+          <label for="chances3">3</label>
+          
+          <input type="radio" name="chances" value="4" id="chances4">
+          <label for="chances4">4</label>
+          
+          <input type="radio" name="chances" value="5" id="chances5">
+          <label for="chances5">5</label>
+          
         </div>
       </fieldset>
 
       <fieldset>
         <legend>Final Position</legend>
         <div class="radio-group">
-          <label><input type="radio" name="position" value="1" checked="true" required> 1</label>
-          <label><input type="radio" name="position" value="2"> 2</label>
-          <label><input type="radio" name="position" value="3"> 3</label>
-          <label><input type="radio" name="position" value="4"> 4</label>
-          <label><input type="radio" name="position" value="5"> 5</label>
-          <label><input type="radio" name="position" value="0"> 0</label>
+          <input type="radio" name="position" value="1" id="position-1" checked="true" required>
+          <label for="position-1">1</label>
+
+          <input type="radio" name="position" value="2" id="position-2">
+          <label for="position-2">2</label>
+
+          <input type="radio" name="position" value="3" id="position-3">
+          <label for="position-3">3</label>
+
+          <input type="radio" name="position" value="4" id="position-4">
+          <label for="position-4">4</label>
+
+          <input type="radio" name="position" value="5" id="position-5">
+          <label for="position-5">5</label>
+
+          <input type="radio" name="position" value="0" id="position-0">
+          <label for="position-0">0</label>
         </div>
       </fieldset>
 
-      <div class="form-group">
-        <label for="disciplinaryPoints">Disciplinary Points</label>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <button type="button" onclick="adjustDisciplinary(-1)">−</button>
-          <input type="number" id="disciplinaryPoints" name="disciplinaryPoints" value="5" style="width: 60px; text-align: center;">
-          <button type="button" onclick="adjustDisciplinary(1)">+</button>
+      <fieldset>
+        <legend>Disciplinary Points</legend>
+        <div class="radio-group">
+
+          <input type="radio" name="disciplinaryPoints" value="5" id="disciplinaryPoints5" checked="true">
+          <label for="disciplinaryPoints5">5</label>
+
+          <input type="radio" name="disciplinaryPoints" value="4" id="disciplinaryPoints4">
+          <label for="disciplinaryPoints4">4</label>
+
+          <input type="radio" name="disciplinaryPoints" value="3" id="disciplinaryPoints3">
+          <label for="disciplinaryPoints3">3</label>
+
+          <input type="radio" name="disciplinaryPoints" value="2" id="disciplinaryPoints2">
+          <label for="disciplinaryPoints2">2</label>
+
+          <input type="radio" name="disciplinaryPoints" value="1" id="disciplinaryPoints1">
+          <label for="disciplinaryPoints1">1</label>
+
+          <input type="radio" name="disciplinaryPoints" value="0" id="disciplinaryPoints0">
+          <label for="disciplinaryPoints0">0</label>
+
+          <input type="radio" name="disciplinaryPoints" value="-1" id="disciplinaryPointsM1">
+          <label for="disciplinaryPointsM1">-1</label>
+
+          <input type="radio" name="disciplinaryPoints" value="-2" id="disciplinaryPointsM2">
+          <label for="disciplinaryPointsM2">-2</label>
+
+          <input type="radio" name="disciplinaryPoints" value="-3" id="disciplinaryPointsM3">
+          <label for="disciplinaryPointsM3">-3</label>
+
+          <input type="radio" name="disciplinaryPoints" value="-4" id="disciplinaryPointsM4">
+          <label for="disciplinaryPointsM4">-4</label>
+
+          <input type="radio" name="disciplinaryPoints" value="-5" id="disciplinaryPointsM5">
+          <label for="disciplinaryPointsM5">-5</label>
+
         </div>
-      </div>
-
-
+      </fieldset>
+      
+      <details>
+        <summary>🚘 Rate Car</summary>
+        <div class="car-feedback-grid">
+          <div class="item">
+            <legend>Drive Feel</legend>
+            <input type="number" name="DriveFeel" min="1" max="100" placeholder="1–100">
+          </div>
+          <div class="item">
+            <legend>Performance</legend>
+            <input type="number" name="Performance" min="1" max="100" placeholder="1–100">
+          </div>
+          <div class="item">
+            <legend>Handling</legend>
+            <input type="number" name="Handling" min="1" max="100" placeholder="1–100">
+          </div>
+          <div class="item">
+            <legend>Design</legend>
+            <input type="number" name="Design" min="1" max="100" placeholder="1–100">
+          </div>
+        </div>
+      </details>
+      
+      
+      <details>
+        <summary>🛣️ Rate Track</summary>
+        <div class="track-rating-group">
+          <div>
+            <legend>Track Rating</legend>
+            <input type="number" name="trackRating" min="1" max="100" placeholder="1–100">
+          </div>
+        </div>
+      </details>
+      
+      
 
       <div class="button-group">
         <button type="submit" class="btn">Save</button>

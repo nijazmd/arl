@@ -12,7 +12,9 @@ body {
   display: flex;
   flex-direction: column;
 }
-
+* {
+  box-sizing: border-box;
+}
 /* Headings */
 h1, h2, h3 {
   color: #00bfff;
@@ -196,7 +198,7 @@ form {
   border-radius: 10px;
 }
 
-input[type="number"], select {
+input, input[type="number"], select {
   width: 100%;
   padding: 8px;
   background-color: #2e2c54;
@@ -541,6 +543,7 @@ input[type="radio"] {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 100%;
 }
 
 .car-name a {
@@ -561,6 +564,15 @@ input[type="radio"] {
 
 .car-single-container {
   padding: 1rem;
+}
+
+.info-row {
+  display: flex;
+  width: 100%;
+}
+
+.car-meta {
+  width: 48%;
 }
 
 .page-title {
@@ -1046,4 +1058,58 @@ h3 {
   border-radius: 6px;
   margin-top: 1rem;
   font-weight: bold;
+}
+.radio-group label {
+  display: inline-block;
+  background: #222;
+  color: #eee;
+  border: 1px solid #555;
+  padding: 6px 12px;
+  margin: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.radio-group input[type="radio"] {
+  display: none;
+}
+
+.radio-group input[type="radio"]:checked + label {
+  background-color: #6840df;
+  color: #fff;
+  border-color: #6840df;
+}
+.radio-group input[type="radio"] {
+  display: none;
+}
+
+.radio-group label {
+  display: inline-block;
+  background-color: #222;
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 6px 12px;
+  margin: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.radio-group input[type="radio"]:checked + label {
+  background-color: #6840DF;
+  color: white;
+  border-color: #6840DF;
+}
+
+.car-feedback-grid {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.car-feedback-grid .item {
+  width: 45%;
+  margin: 0;
 }
