@@ -51,62 +51,74 @@ async function loadData() {
     }
   });
 
-  const resultLines = resultsCSV.split("\n").slice(1);
+    // --- parse RESULTS by header name (robust) ---
+    const resultRows = resultsCSV
+    .trim()
+    .split("\n")
+    .map(r => r.split(",").map(s => s.replace(/"/g, "").trim()));
+
+  const rHeaders = resultRows[0];
+  const rCol = name => rHeaders.indexOf(name);
+  const resultLines = resultRows.slice(1);
+
   const teamPointsMap = {};
   const driverRaceStats = {};
 
-  resultLines.forEach(row => {
-    const cols = row.split(",").map(s => s.replace(/"/g, "").trim());
-    const driver = cols[2];
-    const team = cols[3];
-    const position = parseInt(cols[10], 10);
-    const points = parseInt(cols[11], 10);
-    const disciplinary = parseInt(cols[12], 10) || 0;
-    const totalPoints = isNaN(points) ? 0 : points + disciplinary;
-    
-    if (!driver || isNaN(points)) return;
-    
+  resultLines.forEach(cols => {
+    const driver = cols[rCol("DriverName")];
+    const team = cols[rCol("Team")];
+    const position = parseInt(cols[rCol("Position")] || "", 10);
+    const levelNum = parseInt((cols[rCol("RaceLevel")] || "").replace(/[^\d]/g, ""), 10);
+    if (!(levelNum >= 1 && levelNum <= 6)) return; // only L1–L6
+
+    const pts = parseInt(cols[rCol("Points")] || "", 10) || 0;
+    const disc = parseInt(cols[rCol("DisciplinaryPoints")] || "", 10) || 0;
+    const totalPoints = pts + disc;
+    if (!driver) return;
+
     // Team totals
     teamPointsMap[team] = (teamPointsMap[team] || 0) + totalPoints;
-    
 
     // Driver stats
     if (!driverRaceStats[driver]) {
       driverRaceStats[driver] = { totalPoints: 0, races: 0, firsts: 0, podiums: 0, disciplinary: 0 };
     }
-    const stats = driverRaceStats[driver];
-    stats.totalPoints += totalPoints;
-    stats.disciplinary += disciplinary;
-    stats.races += 1;
-    if (position === 1) stats.firsts += 1;
-    if (position <= 3) stats.podiums += 1;
+    const s = driverRaceStats[driver];
+    s.totalPoints += totalPoints;
+    s.disciplinary += disc;
+    s.races += 1;
+    if (position === 1) s.firsts += 1;
+    if (position >= 1 && position <= 3) s.podiums += 1;
   });
 
   teamStandings = Object.entries(teamPointsMap)
     .sort((a, b) => b[1] - a[1])
     .map(([team, points], i) => ({ team, points, rank: i + 1 }));
 
+  // build driverStats with numeric avgPoints
   driverStats = Object.entries(driverRaceStats).map(([driver, data]) => {
-    const avgPoints = (data.totalPoints / data.races).toFixed(2);
-    const firstPct = ((data.firsts / data.races) * 100).toFixed(1);
-    const podiumPct = ((data.podiums / data.races) * 100).toFixed(1);
-    const discAvg = data.races ? (data.disciplinary / data.races).toFixed(2) : "0.00";
-
-
     const team = driverTeamMap[driver] || "Unknown";
+    const avg = data.races ? data.totalPoints / data.races : 0;
     return {
       driver,
       team,
       ...data,
-      avgPoints,
-      firstPct,
-      discAvg,
-      podiumPct
+      avgPoints: Number(avg.toFixed(2)),
+      firstPct: Number(((data.firsts / (data.races || 1)) * 100).toFixed(1)),
+      podiumPct: Number(((data.podiums / (data.races || 1)) * 100).toFixed(1)),
+      discAvg: Number(((data.races ? data.disciplinary / data.races : 0)).toFixed(2))
     };
   });
 
-  // Rank drivers
-  driverStats.sort((a, b) => b.totalPoints - a.totalPoints).forEach((d, i) => d.rank = i + 1);
+  // Rank drivers by average points (desc), then total points, then wins as tiebreakers
+  driverStats
+    .sort((a, b) =>
+      (b.avgPoints - a.avgPoints) ||
+      (b.totalPoints - a.totalPoints) ||
+      (b.firsts - a.firsts)
+    )
+    .forEach((d, i) => d.rank = i + 1);
+
 }
 
 function renderTeamSummary(teamCode) {
