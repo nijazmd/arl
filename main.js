@@ -1,7 +1,4 @@
 const webAppUrl = "https://script.google.com/macros/s/AKfycbwLxrhusbzSJWL3kuHtG0x_gdjyjzFF8RBu3HipatIlpgy_Sa2HwUu-EuFbG6m5J1Lc7A/exec";
-
-const currentRoundNumber = 3;
-
 const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?output=csv";
 const raceResultsSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv";
 const carSheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2855635&single=true&output=csv";
@@ -142,37 +139,47 @@ function updateCircuitDropdown() {
 
 async function loadStandings() {
   try {
-    const response = await fetch(raceResultsSheetURL);
-    const data = await response.text();
-    const rows = data.split("\n").slice(1).map(row => row.split(","));
+// Replace your current fetch+parse block at the top of loadStandings() with this:
+const response = await fetch(raceResultsSheetURL);
+const text = await response.text();
+const lines = text.split("\n").map(r => r.split(",").map(c => c.replace(/"/g, "").trim()));
+const headers = lines[0];
+const col = name => headers.indexOf(name);
+const rows = lines.slice(1);
 
-    const driverPoints = {};
-    const driverRaceCount = {};
-    const driverFirsts = {};
-    const driverPodiums = {};
+// ... keep driverPoints/driverRaceCount/etc. as-is ...
+// after: const rows = lines.slice(1);
+const driverPoints = {};
+const driverRaceCount = {};
+const driverFirsts = {};
+const driverPodiums = {};
 
-    rows.forEach(row => {
-      const driver = row[columnIndexMap.DriverName]?.replace(/"/g, '').trim();
-      const racePoints = parseInt(row[columnIndexMap.Points], 10);
-      const disciplinaryPoints = parseInt(row[columnIndexMap.DisciplinaryPoints], 10) || 0;
-      const position = parseInt(row[columnIndexMap.Position], 10);
-      const totalPoints = isNaN(racePoints) ? 0 : racePoints + disciplinaryPoints;
+rows.forEach(row => {
+  const driver = row[col("DriverName")];
+  const levelNum = parseInt(row[col("RaceLevel")] || "", 10);
+  const racePoints = parseInt(row[col("Points")], 10);
+  const disciplinaryPoints = parseInt(row[col("DisciplinaryPoints")], 10) || 0;
+  const position = parseInt(row[col("Position")], 10);
 
-      if (!driver || isNaN(totalPoints)) return;
+  // Only count levels 1..6
+  if (!(levelNum >= 1 && levelNum <= 6)) return;
 
-      if (!driverPoints[driver]) {
-        driverPoints[driver] = 0;
-        driverRaceCount[driver] = 0;
-        driverFirsts[driver] = 0;
-        driverPodiums[driver] = 0;
-      }
+  const totalPoints = (isNaN(racePoints) ? 0 : racePoints) + disciplinaryPoints;
+  if (!driver || isNaN(totalPoints)) return;
 
-      driverPoints[driver] += totalPoints;
-      driverRaceCount[driver] += 1;
+  if (!driverPoints[driver]) {
+    driverPoints[driver] = 0;
+    driverRaceCount[driver] = 0;
+    driverFirsts[driver] = 0;
+    driverPodiums[driver] = 0;
+  }
 
-      if (position === 1) driverFirsts[driver]++;
-      if (position >= 1 && position <= 3) driverPodiums[driver]++;
-    });
+  driverPoints[driver] += totalPoints;
+  driverRaceCount[driver] += 1;
+  if (position === 1) driverFirsts[driver]++;
+  if (position >= 1 && position <= 3) driverPodiums[driver]++;
+});
+
 
     const driverResponse = await fetch(sheetURL);
     const driverData = await driverResponse.text();
@@ -294,12 +301,12 @@ function renderTeamStandings(standings) {
   `;
 }
 
-function adjustRound(delta) {
-  const input = document.getElementById("roundNumber");
-  if (!input) return;
-  let value = parseInt(input.value || "0", 10);
-  input.value = value + delta;
-}
+// function adjustRound(delta) {
+//   const input = document.getElementById("roundNumber");
+//   if (!input) return;
+//   let value = parseInt(input.value || "0", 10);
+//   input.value = value + delta;
+// }
 
 function adjustLaps(delta) {
   const lapsInput = document.getElementById("laps");
@@ -310,22 +317,17 @@ function adjustLaps(delta) {
 }
 
 
-async function fetchLastRoundNumber() {
-  const response = await fetch(raceResultsSheetURL);
-  const text = await response.text();
-  const rows = text.trim().split("\n").slice(1);
-  const lastRow = rows[rows.length - 1].split(",");
-  const lastRound = parseInt(lastRow[columnIndexMap.RaceNo], 10) || 0;
-  document.getElementById("roundNumber").value = lastRound;
+// async function fetchLastRoundNumber() {
+//   const response = await fetch(raceResultsSheetURL);
+//   const text = await response.text();
+//   const rows = text.trim().split("\n").slice(1);
+//   const lastRow = rows[rows.length - 1].split(",");
+//   const lastRound = parseInt(lastRow[columnIndexMap.RaceNo], 10) || 0;
+//   document.getElementById("roundNumber").value = lastRound;
 
-}
+// }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const currentRoundDisplay = document.getElementById("currentRoundDisplay");
-  if (currentRoundDisplay) {
-    currentRoundDisplay.textContent = currentRoundNumber;
-  }
-
   if (document.getElementById("driver-standings") && document.getElementById("team-standings")) {
     loadStandings();
   }
@@ -335,15 +337,8 @@ document.addEventListener("DOMContentLoaded", () => {
     populateCarDropdown();
     populateTrackDropdown();
   }
-
-  if (document.getElementById("raceForm")) {
-    fetchLastRoundNumber();
-    populateDriverDropdown();
-    populateCarDropdown();
-    populateTrackDropdown();
-  }
-  
 });
+
 
 async function submitRaceResult(event) {
   event.preventDefault();
