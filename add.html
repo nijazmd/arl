@@ -2,36 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-    <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>ARL - Add Race Result</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .chip-group { display:flex; flex-wrap:wrap; gap:.5rem; }
+    .chip-group input { display:none; }
+    .chip-group label {
+      padding:.45rem .7rem; border:1px solid var(--card-border, #333);
+      border-radius:999px; cursor:pointer; user-select:none;
+      background:var(--chip-bg, #111); box-shadow: var(--shadow-xs, 0 1px 2px rgba(0,0,0,.3));
+    }
+    .chip-group input:checked + label { outline:2px solid #3fd17d; }
+    .hint { font-size:.8rem; opacity:.8; margin-top:.25rem }
+    .muted { opacity:.7 }
+    .inline { display:inline-flex; align-items:center; gap:.4rem }
+    .warn { color:#ffb84d; font-size:.9rem }
+    .kpi { font-variant-numeric: tabular-nums; }
+    .two { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+    .three { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+    .sr { position:absolute; left:-9999px; }
+    .small-note { font-size:.8rem; opacity:.8 }
+    .divider { height:1px; background:#222; margin:.75rem 0; }
+    .inline-input { display:flex; align-items:center; gap:.5rem }
+  </style>
 </head>
 <body>
-
   <main id="content" class="full-page-form">
     <form id="raceForm" onsubmit="submitRaceResult(event)">
       <h2>Add Race Result</h2>
 
+      <!-- CUPS -->
       <div class="form-group">
-        <label for="roundNumber">Round Number:</label>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <button type="button" onclick="adjustRound(-1)">−</button>
-          <input type="number" id="roundNumber" name="roundNumber" required>
-          <button type="button" onclick="adjustRound(1)">+</button>
-        </div>
-      </div>      
-
-      <div class="form-group">
-        <label for="driverName">Driver</label>
-        <div id="driverRadioGroup" class="radio-group"></div>
+        <label>Cup</label>
+        <div id="cupChips" class="chip-group"></div>
+        <div class="hint muted">Default is <b>Weekly</b> (races outside cups).</div>
       </div>
 
+      <!-- RACE LEVEL (moved up, mandatory, no default) -->
+      <fieldset>
+        <legend>Race Level</legend>
+        <div id="raceLevelChips" class="chip-group">
+          <input type="radio" name="raceLevel" value="1" id="raceLevel1" required>
+          <label for="raceLevel1">L1</label>
+          <input type="radio" name="raceLevel" value="2" id="raceLevel2">
+          <label for="raceLevel2">L2</label>
+          <input type="radio" name="raceLevel" value="3" id="raceLevel3">
+          <label for="raceLevel3">L3</label>
+          <input type="radio" name="raceLevel" value="4" id="raceLevel4">
+          <label for="raceLevel4">L4</label>
+          <input type="radio" name="raceLevel" value="5" id="raceLevel5">
+          <label for="raceLevel5">L5</label>
+          <input type="radio" name="raceLevel" value="6" id="raceLevel6">
+          <label for="raceLevel6">L6</label>
+        </div>
+        <div class="hint muted" id="levelHint">Weekly → choose level to auto-pick driver. Cup → defaults to L5.</div>
+      </fieldset>
+
+      <!-- ROUND -->
       <div class="form-group">
-        <label for="carName">Car</label>
+        <label for="roundNumber">Round Number</label>
+        <div class="inline-input">
+          <button type="button" onclick="adjustRound(-1)">−</button>
+          <input type="number" id="roundNumber" name="roundNumber" inputmode="numeric" required>
+          <button type="button" onclick="adjustRound(1)">+</button>
+        </div>
+        <div class="hint muted" id="roundHint"></div>
+      </div>
+
+      <!-- DRIVER -->
+      <div class="form-group">
+        <label for="driverName">Driver</label>
+        <div id="driverRadioGroup" class="chip-group"></div>
+        <div class="hint muted" id="driverHint">Auto-selected based on rules. You can override.</div>
+      </div>
+
+      <!-- CAR -->
+      <div class="form-group">
+        <label class="inline">Car <span id="carWarn" class="warn" style="display:none;">⚠️ not in Cars</span></label>
         <input list="carList" id="carName" name="carName" required />
         <datalist id="carList"></datalist>
       </div>
 
+      <!-- TRACK -->
       <div class="form-group">
         <label for="trackName">Track</label>
         <input list="trackList" id="trackName" name="trackName" required />
@@ -40,172 +93,106 @@
 
       <div class="form-group">
         <label for="circuitName">Circuit</label>
-        <select id="circuitName" name="circuitName" required>
-        </select>
+        <select id="circuitName" name="circuitName" required></select>
+        <div class="hint kpi" id="distanceHint"></div>
       </div>
 
       <fieldset>
         <legend>Direction</legend>
-        <div class="radio-group">
-          <input type="radio" name="direction" value="Forward" id="directionForward" checked="true" required>
+        <div class="chip-group">
+          <input type="radio" name="direction" value="Forward" id="directionForward" checked required>
           <label for="directionForward">Forward</label>
-
           <input type="radio" name="direction" value="Reverse" id="directionReverse">
           <label for="directionReverse">Reverse</label>
-
         </div>
       </fieldset>
 
       <div class="form-group">
-        <label for="laps">Laps:</label>
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <label for="laps">Laps</label>
+        <div class="inline-input">
           <button type="button" onclick="adjustLaps(-1)">−</button>
-          <input type="number" name="laps" id="laps" min="1" value="0" required>
+          <input type="number" name="laps" id="laps" min="0" step="1" inputmode="numeric" value="0" required>
           <button type="button" onclick="adjustLaps(1)">+</button>
         </div>
-      </div>      
-      
-      <fieldset>
-        <legend>Race Level</legend>
-        <div class="radio-group">
-          <input type="radio" name="raceLevel" value="1" id="raceLevel1" checked="true" required>
-          <label for="raceLevel1">1</label>
-
-          <input type="radio" name="raceLevel" value="2" id="raceLevel2">
-          <label for="raceLevel2">2</label>
-
-          <input type="radio" name="raceLevel" value="3" id="raceLevel3">
-          <label for="raceLevel3">3</label>
-
-          <input type="radio" name="raceLevel" value="4" id="raceLevel4">
-          <label for="raceLevel4">4</label>
-
-          <input type="radio" name="raceLevel" value="5" id="raceLevel5">
-          <label for="raceLevel5">5</label>
-
-          <input type="radio" name="raceLevel" value="6" id="raceLevel6">
-          <label for="raceLevel6">6</label>
-
-        </div>
-      </fieldset>
+        <div class="small-note" id="lapsNote"></div>
+      </div>
 
       <fieldset>
         <legend>Chances</legend>
-        <div class="radio-group">
-          <input type="radio" name="chances" value="1" id="chances1" checked="true" required>
-          <label for="chances1">1</label>
-          
-          <input type="radio" name="chances" value="2" id="chances2">
-          <label for="chances2">2</label>
-          
-          <input type="radio" name="chances" value="3" id="chances3">
-          <label for="chances3">3</label>
-          
-          <input type="radio" name="chances" value="4" id="chances4">
-          <label for="chances4">4</label>
-          
-          <input type="radio" name="chances" value="5" id="chances5">
-          <label for="chances5">5</label>
-          
+        <div class="chip-group">
+          <input type="radio" name="chances" value="1" id="ch1" checked required><label for="ch1">1</label>
+          <input type="radio" name="chances" value="2" id="ch2"><label for="ch2">2</label>
+          <input type="radio" name="chances" value="3" id="ch3"><label for="ch3">3</label>
+          <input type="radio" name="chances" value="4" id="ch4"><label for="ch4">4</label>
+          <input type="radio" name="chances" value="5" id="ch5"><label for="ch5">5</label>
         </div>
       </fieldset>
 
       <fieldset>
         <legend>Final Position</legend>
-        <div class="radio-group">
-          <input type="radio" name="position" value="1" id="position-1" checked="true" required>
-          <label for="position-1">1</label>
-
-          <input type="radio" name="position" value="2" id="position-2">
-          <label for="position-2">2</label>
-
-          <input type="radio" name="position" value="3" id="position-3">
-          <label for="position-3">3</label>
-
-          <input type="radio" name="position" value="4" id="position-4">
-          <label for="position-4">4</label>
-
-          <input type="radio" name="position" value="5" id="position-5">
-          <label for="position-5">5</label>
-
-          <input type="radio" name="position" value="0" id="position-0">
-          <label for="position-0">0</label>
+        <div class="chip-group">
+          <input type="radio" name="position" value="1" id="p1" required><label for="p1">1</label>
+          <input type="radio" name="position" value="2" id="p2"><label for="p2">2</label>
+          <input type="radio" name="position" value="3" id="p3"><label for="p3">3</label>
+          <input type="radio" name="position" value="4" id="p4"><label for="p4">4</label>
+          <input type="radio" name="position" value="5" id="p5"><label for="p5">5</label>
+          <input type="radio" name="position" value="0" id="p0"><label for="p0">0</label>
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend>Disciplinary Points</legend>
-        <div class="radio-group">
-
-          <input type="radio" name="disciplinaryPoints" value="5" id="disciplinaryPoints5" checked="true">
-          <label for="disciplinaryPoints5">5</label>
-
-          <input type="radio" name="disciplinaryPoints" value="4" id="disciplinaryPoints4">
-          <label for="disciplinaryPoints4">4</label>
-
-          <input type="radio" name="disciplinaryPoints" value="3" id="disciplinaryPoints3">
-          <label for="disciplinaryPoints3">3</label>
-
-          <input type="radio" name="disciplinaryPoints" value="2" id="disciplinaryPoints2">
-          <label for="disciplinaryPoints2">2</label>
-
-          <input type="radio" name="disciplinaryPoints" value="1" id="disciplinaryPoints1">
-          <label for="disciplinaryPoints1">1</label>
-
-          <input type="radio" name="disciplinaryPoints" value="0" id="disciplinaryPoints0">
-          <label for="disciplinaryPoints0">0</label>
-
-          <input type="radio" name="disciplinaryPoints" value="-1" id="disciplinaryPointsM1">
-          <label for="disciplinaryPointsM1">-1</label>
-
-          <input type="radio" name="disciplinaryPoints" value="-2" id="disciplinaryPointsM2">
-          <label for="disciplinaryPointsM2">-2</label>
-
-          <input type="radio" name="disciplinaryPoints" value="-3" id="disciplinaryPointsM3">
-          <label for="disciplinaryPointsM3">-3</label>
-
-          <input type="radio" name="disciplinaryPoints" value="-4" id="disciplinaryPointsM4">
-          <label for="disciplinaryPointsM4">-4</label>
-
-          <input type="radio" name="disciplinaryPoints" value="-5" id="disciplinaryPointsM5">
-          <label for="disciplinaryPointsM5">-5</label>
-
-        </div>
-      </fieldset>
-      
       <details>
-        <summary>🚘 Rate Car</summary>
-        <div class="car-feedback-grid">
-          <div class="item">
-            <legend>Drive Feel</legend>
-            <input type="number" name="DriveFeel" min="1" max="100" placeholder="1–100">
+        <summary>🚘 Rate Car & PP</summary>
+        <div class="two">
+          <div>
+            <legend>Drive Feel (1–100)</legend>
+            <input type="number" name="DriveFeel" min="1" max="100" step="1" inputmode="numeric" placeholder="1–100">
+            <div class="hint" id="dfHint"></div>
           </div>
-          <div class="item">
-            <legend>Performance</legend>
-            <input type="number" name="Performance" min="1" max="100" placeholder="1–100">
+          <div>
+            <legend>Handling (1–100)</legend>
+            <input type="number" name="Handling" min="1" max="100" step="1" inputmode="numeric" placeholder="1–100">
+            <div class="hint" id="hdHint"></div>
           </div>
-          <div class="item">
-            <legend>Handling</legend>
-            <input type="number" name="Handling" min="1" max="100" placeholder="1–100">
+        </div>
+        <div class="two">
+          <div>
+            <legend>Design (1–100)</legend>
+            <input type="number" name="Design" min="1" max="100" step="1" inputmode="numeric" placeholder="1–100">
+            <div class="hint" id="dzHint"></div>
           </div>
-          <div class="item">
-            <legend>Design</legend>
-            <input type="number" name="Design" min="1" max="100" placeholder="1–100">
+          <div>
+            <legend>Favourite</legend>
+            <label class="inline"><input type="checkbox" id="favCar"> <span>Add to favourites</span></label>
+            <div class="hint" id="favHint"></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="three">
+          <div>
+            <legend>PP (SH)</legend>
+            <input type="number" name="shpp" id="shpp" step="0.01" inputmode="decimal" placeholder="e.g. 520.50">
+            <div class="hint" id="shppHint"></div>
+          </div>
+          <div>
+            <legend>PP (RH)</legend>
+            <input type="number" name="rhpp" id="rhpp" step="0.01" inputmode="decimal" placeholder="e.g. 590.00">
+            <div class="hint" id="rhppHint"></div>
+          </div>
+          <div>
+            <legend>PP (Max)</legend>
+            <input type="number" name="maxpp" id="maxpp" step="0.01" inputmode="decimal" placeholder="e.g. 720.00">
+            <div class="hint" id="maxppHint"></div>
           </div>
         </div>
       </details>
-      
+
       <details>
         <summary>🛣️ Rate Track</summary>
-        <div class="track-rating-group">
-          <div>
-            <legend>Track Rating</legend>
-            <input type="number" name="trackRating" min="1" max="100" placeholder="1–100">
-          </div>
+        <div>
+          <legend>Track Rating (1–100)</legend>
+          <input type="number" name="trackRating" min="1" max="100" step="1" inputmode="numeric" placeholder="1–100">
         </div>
       </details>
-      
-      
 
       <div class="button-group">
         <button type="submit" class="btn">Save</button>
@@ -224,7 +211,601 @@
     <a href="add.html">➕</a>
   </nav>
 
-  <script src="main.js"></script>
+  <script>
+  /***** CONFIG *****/
+  const webAppUrl = "https://script.google.com/macros/s/AKfycbwLxrhusbzSJWL3kuHtG0x_gdjyjzFF8RBu3HipatIlpgy_Sa2HwUu-EuFbG6m5J1Lc7A/exec";
+  const driversCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?output=csv";
+  const raceResultsCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=797800265&single=true&output=csv";
+  const carsCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2855635&single=true&output=csv";
+  const tracksCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=2013785235&single=true&output=csv";
+  /* You’ll need to publish Cups & CupEntries CSVs and paste their URLs here */
+  const cupsCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=1665101756&single=true&output=csv";
+  const cupEntriesCsv = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ63tC7c06XWlai6B2JUDeYNFjUXgA4ZSRb-r16PRSBaSG-egHddo0RYqCmNxknnR5MjgPmvjRlZZ-n/pub?gid=645625740&single=true&output=csv";
 
+  /***** STATE *****/
+  const STATE = {
+    drivers: [],                      // {Driver, Team}
+    cars: new Map(),                  // CarName -> carRow
+    carNames: [],
+    tracks: [],                       // rows of Tracks
+    circuitsByTrack: new Map(),       // TrackName -> [circuit...]
+    distanceByTrackCircuit: new Map(),// key "Track|Circuit" -> Distance (km)
+    cups: [],                         // live cups: {CupID,CupName,CupStatus,CupRoundNo,AvgDistance}
+    cupEntries: new Map(),            // Map CupID -> [{Order, DriverName, Car, Track, ...}]
+    weeklyStats: {                    // derived from RaceResults where CupID=="Weekly" (fallback if col missing)
+      racesByDriver: new Map(),
+      racesByDriverLevel: new Map(),  // key "Driver|Level" -> count
+      pointsByDriver: new Map(),
+    },
+    weeklyRound: "",                  // last Weekly round number (as-is)
+    teamByDriver: new Map(),
+    selectedCupID: "Weekly",
+  };
+
+  const els = {
+    cupChips: () => document.getElementById("cupChips"),
+    raceLevelRadios: () => Array.from(document.querySelectorAll('input[name="raceLevel"]')),
+    roundNumber: () => document.getElementById("roundNumber"),
+    roundHint: () => document.getElementById("roundHint"),
+    driverGroup: () => document.getElementById("driverRadioGroup"),
+    driverHint: () => document.getElementById("driverHint"),
+    carInput: () => document.getElementById("carName"),
+    carList: () => document.getElementById("carList"),
+    carWarn: () => document.getElementById("carWarn"),
+    trackInput: () => document.getElementById("trackName"),
+    trackList: () => document.getElementById("trackList"),
+    circuitSelect: () => document.getElementById("circuitName"),
+    distanceHint: () => document.getElementById("distanceHint"),
+    laps: () => document.getElementById("laps"),
+    lapsNote: () => document.getElementById("lapsNote"),
+    fav: () => document.getElementById("favCar"),
+    // rating hints
+    dfHint: () => document.getElementById("dfHint"),
+    hdHint: () => document.getElementById("hdHint"),
+    dzHint: () => document.getElementById("dzHint"),
+    shppHint: () => document.getElementById("shppHint"),
+    rhppHint: () => document.getElementById("rhppHint"),
+    maxppHint: () => document.getElementById("maxppHint"),
+  };
+
+  /***** HELPERS *****/
+  const csvParse = (text) =>
+    text.trim().split("\n").map(r =>
+      r.split(",").map(c => c.replace(/^"|"$/g,"").trim())
+    );
+
+  const getColIndex = (hdrs, name) => hdrs.indexOf(name);
+
+  function keyTC(track, circuit){ return `${track}|${circuit}`; }
+
+  function adjustRound(delta){
+    const el = els.roundNumber(); if(!el) return;
+    let v = parseInt(el.value || "0", 10);
+    if(isNaN(v)) v = 0;
+    el.value = v + delta;
+  }
+  function adjustLaps(delta){
+    const el = els.laps(); if(!el) return;
+    let v = parseInt(el.value || "0", 10);
+    v = Math.max(STATE.selectedCupID === "Weekly" ? 0 : 1, v + delta);
+    el.value = v;
+  }
+
+  function setCircuitOptions(track){
+    const sel = els.circuitSelect(); sel.innerHTML = "";
+    const circuits = STATE.circuitsByTrack.get(track) || [];
+    if(circuits.length === 0){
+      sel.innerHTML = '<option value="">Select</option>';
+      return;
+    }
+    sel.insertAdjacentHTML("beforeend", '<option value="">Select</option>');
+    circuits.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c; opt.textContent = c; sel.appendChild(opt);
+    });
+    sel.selectedIndex = 1; // first real
+    updateDistanceAndLaps();
+  }
+
+  function updateDistanceAndLaps(){
+    const track = els.trackInput().value || "";
+    const circuit = els.circuitSelect().value || "";
+    const dist = STATE.distanceByTrackCircuit.get(keyTC(track, circuit));
+    els.distanceHint().textContent = dist ? `Distance: ${dist} km` : "";
+    if(STATE.selectedCupID !== "Weekly" && dist){
+      const cup = STATE.cups.find(c => c.CupID === STATE.selectedCupID);
+      const avg = parseFloat(cup?.AvgDistance || "");
+      const d = parseFloat(dist);
+      if(!isNaN(avg) && !isNaN(d) && d>0){
+        const laps = Math.max(1, Math.round(avg / d));
+        els.laps().value = laps;
+        els.lapsNote().textContent = `Auto (Cup): round(${avg} / ${d}) → ${laps}`;
+      }
+    } else {
+      els.lapsNote().textContent = STATE.selectedCupID === "Weekly" ? "Weekly: default 0 (editable)" : "";
+    }
+  }
+
+  function showCarHints(carRow){
+    els.dfHint().textContent = carRow?.DriveFeel ? `Current: ${carRow.DriveFeel}` : "";
+    els.hdHint().textContent = carRow?.Handling ? `Current: ${carRow.Handling}` : "";
+    els.dzHint().textContent = carRow?.Design ? `Current: ${carRow.Design}` : "";
+    els.shppHint().textContent = carRow?.shpp ? `Current SH: ${carRow.shpp}` : "";
+    els.rhppHint().textContent = carRow?.rhpp ? `Current RH: ${carRow.rhpp}` : "";
+    els.maxppHint().textContent = carRow?.maxpp ? `Current Max: ${carRow.maxpp}` : "";
+    els.fav().checked = (carRow?.Favourite || "").toString().toLowerCase() === "true";
+    els.fav().disabled = false;
+    document.getElementById("favHint").textContent = els.fav().checked ? "Currently favourited" : "Not favourited";
+  }
+
+  function carMismatchCheck(){
+    const car = els.carInput().value?.trim();
+    const known = STATE.cars.has(car);
+    els.carWarn().style.display = known || !car ? "none" : "inline";
+  }
+
+  /***** DATA LOAD *****/
+  async function loadAll(){
+    // Drivers
+    const dTxt = await (await fetch(driversCsv)).text();
+    const dRows = csvParse(dTxt);
+    const dHdr = dRows[0];
+    const cDriver = getColIndex(dHdr, "Driver");
+    const cTeam = getColIndex(dHdr, "Team");
+    STATE.drivers = dRows.slice(1).filter(r => r[cDriver]).map(r => ({Driver:r[cDriver], Team:r[cTeam]||""}));
+    STATE.drivers.forEach(d => STATE.teamByDriver.set(d.Driver, d.Team));
+
+    // Cars
+    const cTxt = await (await fetch(carsCsv)).text();
+    const cRows = csvParse(cTxt);
+    const cHdr = cRows[0];
+    const idx = name => getColIndex(cHdr, name);
+    cRows.slice(1).forEach(r => {
+      const row = {
+        CarName: r[idx("CarName")],
+        DriveFeel: r[idx("DriveFeel")],
+        Handling: r[idx("Handling")],
+        Design: r[idx("Design")],
+        shpp: r[idx("shpp")],
+        rhpp: r[idx("rhpp")],
+        maxpp: r[idx("maxpp")],
+        Favourite: r[idx("Favourite")],
+      };
+      if(row.CarName){
+        STATE.cars.set(row.CarName, row);
+      }
+    });
+    STATE.carNames = Array.from(STATE.cars.keys());
+
+    // Tracks
+    const tTxt = await (await fetch(tracksCsv)).text();
+    const tRows = csvParse(tTxt);
+    const tHdr = tRows[0];
+    const tTrack = getColIndex(tHdr,"TrackName");
+    const tCircuit = getColIndex(tHdr,"Circuit");
+    const tDistance = getColIndex(tHdr,"Distance");
+    tRows.slice(1).forEach(r => {
+      const tr = r[tTrack], ci = r[tCircuit], dist = r[tDistance];
+      if(!tr) return;
+      if(!STATE.circuitsByTrack.has(tr)) STATE.circuitsByTrack.set(tr, []);
+      if(ci && !STATE.circuitsByTrack.get(tr).includes(ci)){
+        STATE.circuitsByTrack.get(tr).push(ci);
+      }
+      if(tr && ci && dist){
+        STATE.distanceByTrackCircuit.set(keyTC(tr, ci), dist);
+      }
+    });
+
+    // Cups (Live only)
+    if(cupsCsv.startsWith("http")){
+      const cupTxt = await (await fetch(cupsCsv)).text();
+      const cupRows = csvParse(cupTxt);
+      const h = cupRows[0];
+      const cId = getColIndex(h,"CupID");
+      const cName = getColIndex(h,"CupName");
+      const cStatus = getColIndex(h,"CupStatus");
+      const cRound = getColIndex(h,"CupRoundNo");
+      const cAvg = getColIndex(h,"AvgDistance");
+      STATE.cups = cupRows.slice(1).map(r => ({
+        CupID:r[cId], CupName:r[cName], CupStatus:r[cStatus], CupRoundNo:r[cRound], AvgDistance:r[cAvg]
+      })).filter(c => (c.CupStatus||"").toLowerCase() === "live");
+    }
+
+    // CupEntries
+    if(cupEntriesCsv.startsWith("http")){
+      const ceTxt = await (await fetch(cupEntriesCsv)).text();
+      const ceRows = csvParse(ceTxt);
+      const h = ceRows[0];
+      const cCup = getColIndex(h,"CupID");
+      const cOrder = getColIndex(h,"Order");
+      const cDriverName = getColIndex(h,"DriverName");
+      const cCar = getColIndex(h,"Car");
+      const cTrack = getColIndex(h,"Track");
+      (ceRows.slice(1)).forEach(r => {
+        const cup = r[cCup]; if(!cup) return;
+        if(!STATE.cupEntries.has(cup)) STATE.cupEntries.set(cup, []);
+        STATE.cupEntries.get(cup).push({
+          CupID: cup,
+          Order: parseInt(r[cOrder]||"9999",10),
+          DriverName: r[cDriverName],
+          Car: r[cCar],
+          Track: r[cTrack],
+        });
+      });
+      // sort by Order
+      for(const [k, arr] of STATE.cupEntries.entries()){
+        arr.sort((a,b)=>a.Order-b.Order);
+      }
+    }
+
+    // RaceResults → compute Weekly stats + last Weekly round
+    const rrTxt = await (await fetch(raceResultsCsv)).text();
+    const rrRows = csvParse(rrTxt);
+    const rrHdr = rrRows[0];
+    const rRaceNo = getColIndex(rrHdr,"RaceNo");
+    const rDriver = getColIndex(rrHdr,"DriverName");
+    const rLevel = getColIndex(rrHdr,"RaceLevel");
+    const rPoints = getColIndex(rrHdr,"Points");
+    const rCupID = getColIndex(rrHdr,"CupID"); // may be -1 if not created yet
+    const rDP     = getColIndex(rrHdr,"DisciplinaryPoints"); // NEW
+
+
+    // 1) Build selection stats from ALL races (Weekly + Cups)
+  const allRows = rrRows.slice(1);
+
+  // clear (defensive, in case loadAll runs again)
+  STATE.weeklyStats.racesByDriver.clear();
+  STATE.weeklyStats.racesByDriverLevel.clear();
+  STATE.weeklyStats.pointsByDriver.clear();
+
+  allRows.forEach(r => {
+    const drv = r[rDriver];
+    if (!drv) return;
+
+    const lvl = r[rLevel];
+    // Points + DisciplinaryPoints (handle missing DP column gracefully)
+    const pts = (parseFloat(r[rPoints] || "0") || 0) +
+                (rDP !== -1 ? (parseFloat(r[rDP] || "0") || 0) : 0);
+
+    // total races
+    STATE.weeklyStats.racesByDriver.set(drv, (STATE.weeklyStats.racesByDriver.get(drv) || 0) + 1);
+
+    // races by selected level
+    const k = `${drv}|${lvl}`;
+    STATE.weeklyStats.racesByDriverLevel.set(k, (STATE.weeklyStats.racesByDriverLevel.get(k) || 0) + 1);
+
+    // sum of points (Points + DP)
+    STATE.weeklyStats.pointsByDriver.set(drv, (STATE.weeklyStats.pointsByDriver.get(drv) || 0) + pts);
+  });
+
+  // 2) Weekly round default still comes from last row where CupID == "Weekly"
+  let lastWeeklyRound = "";
+  const weeklyRows = rrRows.slice(1).filter(r => {
+    if (rCupID === -1) return true; // backward-compat: treat all as Weekly if no CupID column
+    return (r[rCupID] || "").toLowerCase() === "weekly";
+  });
+  if (weeklyRows.length) {
+    const last = weeklyRows[weeklyRows.length - 1];
+    lastWeeklyRound = last[rRaceNo] || "";
+  }
+  STATE.weeklyRound = lastWeeklyRound;
+
+
+    buildUI();
+  }
+
+  /***** UI BUILD *****/
+  function buildUI(){
+    // Cup chips
+    const cupContainer = els.cupChips();
+    const live = STATE.cups;
+    const items = [{ CupID:"Weekly", CupName:"Weekly", isWeekly:true }, ...live];
+    cupContainer.innerHTML = items.map((c,i)=>{
+      const id = `cup_${c.CupID}`;
+      const checked = c.CupID==="Weekly" ? "checked" : "";
+      return `
+        <input type="radio" name="cup" id="${id}" value="${c.CupID}" ${checked} required>
+        <label for="${id}">${c.CupName}</label>
+      `;
+    }).join("");
+    cupContainer.addEventListener("change", onCupChange);
+
+    // Drivers
+    const dg = els.driverGroup();
+    dg.innerHTML = STATE.drivers.map((d,ix)=>{
+      const id = `drv_${ix}`;
+      return `
+        <input type="radio" name="driverName" id="${id}" value="${d.Driver}" ${ix===0?"":""
+      }>
+        <label for="${id}">${d.Driver}</label>
+      `;
+    }).join("");
+    dg.addEventListener("change", ()=> {
+      // If cup selected, when user overrides driver, re-prefill car/track from CupEntries
+      if(STATE.selectedCupID !== "Weekly"){
+        prefillCarTrackForCup();
+      }
+    });
+
+    // Cars datalist
+    els.carList().innerHTML = STATE.carNames.map(n=>`<option value="${n}">`).join("");
+    els.carInput().addEventListener("input", ()=>{
+      const car = els.carInput().value.trim();
+      const row = STATE.cars.get(car);
+      showCarHints(row);
+      carMismatchCheck();
+    });
+
+    // Tracks datalist
+    const trackNames = Array.from(STATE.circuitsByTrack.keys());
+    els.trackList().innerHTML = trackNames.map(t=>`<option value="${t}">`).join("");
+    els.trackInput().addEventListener("change", ()=>{
+      setCircuitOptions(els.trackInput().value);
+    });
+    els.circuitSelect().addEventListener("change", updateDistanceAndLaps);
+
+    // Race Level listeners
+    els.raceLevelRadios().forEach(r => r.addEventListener("change", onRaceLevelChange));
+
+    // Initial defaults
+    STATE.selectedCupID = "Weekly";
+    els.roundNumber().value = STATE.weeklyRound || "";
+    els.roundHint().textContent = STATE.weeklyRound ? `Weekly → last round: ${STATE.weeklyRound}` : "Weekly → no previous round found";
+    els.laps().value = 0;
+    els.lapsNote().textContent = "Weekly: default 0 (editable)";
+    els.driverHint().textContent = "Pick a level to auto-select a Weekly driver (lowest races → level races → lowest pts avg).";
+
+    // If user chooses a car manually on load, show hints
+    carMismatchCheck();
+  }
+
+  /***** LOGIC *****/
+  function onCupChange(e){
+    const val = (new FormData(document.getElementById("raceForm")).get("cup")) || "Weekly";
+    STATE.selectedCupID = val;
+
+    if(val === "Weekly"){
+      els.roundNumber().value = STATE.weeklyRound || "";
+      els.roundHint().textContent = STATE.weeklyRound ? `Weekly → last round: ${STATE.weeklyRound}` : "Weekly → no previous round found";
+      // Clear car/track
+      els.carInput().value = "";
+      els.trackInput().value = "";
+      els.circuitSelect().innerHTML = "";
+      els.distanceHint().textContent = "";
+      els.laps().value = 0;
+      els.lapsNote().textContent = "Weekly: default 0 (editable)";
+      // Race level: no default (user must pick)
+      els.raceLevelRadios().forEach(r=> r.checked=false);
+      document.getElementById("raceLevel5").checked = false;
+      els.driverHint().textContent = "Pick a level to auto-select a Weekly driver (lowest races → level races → lowest pts avg).";
+    } else {
+      const cup = STATE.cups.find(c=>c.CupID===val);
+      els.roundNumber().value = cup?.CupRoundNo || "";
+      els.roundHint().textContent = `Cup → Round ${cup?.CupRoundNo||"?"}`;
+      // Set Race Level = 5 by default
+      els.raceLevelRadios().forEach(r=> r.checked=false);
+      document.getElementById("raceLevel5").checked = true;
+
+      // Auto-pick driver by next Order (exclude completed)
+      autoPickCupDriver();
+
+      // Prefill car/track/circuit + laps from distance
+      prefillCarTrackForCup();
+    }
+  }
+
+  function onRaceLevelChange(){
+    if(STATE.selectedCupID === "Weekly"){
+      autoPickWeeklyDriver();
+    }
+  }
+
+  function autoPickWeeklyDriver(){
+    // Need selected level
+    const lvl = (new FormData(document.getElementById("raceForm")).get("raceLevel")) || "";
+    if(!lvl){
+      els.driverHint().textContent = "Choose a Race Level to auto-select driver.";
+      return;
+    }
+
+    // Make list with metrics
+    const stats = STATE.drivers.map(d=>{
+      const name = d.Driver;
+      const total = STATE.weeklyStats.racesByDriver.get(name)||0;
+      const lvlCnt = STATE.weeklyStats.racesByDriverLevel.get(`${name}|${lvl}`)||0;
+      const pts = STATE.weeklyStats.pointsByDriver.get(name)||0;
+      const avg = total>0 ? (pts/total) : 0;
+      return {name,total,lvlCnt,avg};
+    });
+
+    // Sort: lowest total → lowest level races → lowest points avg
+    stats.sort((a,b)=>{
+      if(a.total!==b.total) return a.total-b.total;
+      if(a.lvlCnt!==b.lvlCnt) return a.lvlCnt-b.lvlCnt;
+      return a.avg-b.avg;
+    });
+
+    const best = stats[0];
+    if(!best){ return; }
+
+    // Check the driver chip
+    const radios = Array.from(document.querySelectorAll('input[name="driverName"]'));
+    const r = radios.find(x=>x.value===best.name);
+    if(r) { r.checked = true; }
+
+    els.driverHint().textContent = `Auto: ${best.name} (Weekly) • total=${best.total}, L${lvl}=${best.lvlCnt}, avg=${best.avg.toFixed(2)}. You can override.`;
+
+    // Weekly: leave car/track blank
+    els.carInput().value = "";
+    els.trackInput().value = "";
+    els.circuitSelect().innerHTML = "";
+    els.distanceHint().textContent = "";
+    els.laps().value = 0;
+    els.lapsNote().textContent = "Weekly: default 0 (editable)";
+  }
+
+  function autoPickCupDriver(){
+    const cupID = STATE.selectedCupID;
+    const entries = (STATE.cupEntries.get(cupID) || []).slice().sort((a,b)=>a.Order-b.Order);
+    if (entries.length === 0) {
+      els.driverHint().textContent = "No CupEntries found for this Cup.";
+      return;
+    }
+
+    // Helper to normalize CupID for matching; keep driver names' case for UI matching
+    const clean = s => (s || "").trim().toLowerCase();
+
+    // Read RaceResults and exclude drivers who already have a row with this CupID
+    fetch(raceResultsCsv).then(r=>r.text()).then(t=>{
+      const rr = csvParse(t);
+      const h = rr[0], ix = n => h.indexOf(n);
+      const iCup = ix("CupID");
+      const iDrv = ix("DriverName");
+
+      let ran = new Set();
+      if (iCup !== -1 && iDrv !== -1) {
+        ran = new Set(
+          rr.slice(1)
+            .filter(row => clean(row[iCup]) === clean(cupID))
+            .map(row => (row[iDrv] || "").trim())
+        );
+      }
+
+      // entries whose DriverName hasn't yet appeared in RaceResults for this Cup
+      const remaining = entries.filter(e => !ran.has((e.DriverName || "").trim()));
+      const next = remaining[0] || entries[0]; // fallback if all are completed
+
+      // Select that driver chip
+      const radios = Array.from(document.querySelectorAll('input[name="driverName"]'));
+      const r = radios.find(x => (x.value || "").trim() === (next.DriverName || "").trim());
+      if (r) r.checked = true;
+
+      prefillCarTrackForCup();
+
+      els.driverHint().textContent =
+        remaining.length
+          ? `Auto (Cup): ${next.DriverName} (Order ${next.Order}). You can override.`
+          : `Auto (Cup): all entries seem completed; defaulting to Order ${next.Order} (${next.DriverName}).`;
+    }).catch(err=>{
+      console.error("Cup auto-pick failed to read RaceResults:", err);
+      // Graceful fallback: pick first by Order
+      const next = entries[0];
+      const radios = Array.from(document.querySelectorAll('input[name="driverName"]'));
+      const r = radios.find(x => (x.value || "").trim() === (next.DriverName || "").trim());
+      if (r) r.checked = true;
+      prefillCarTrackForCup();
+      els.driverHint().textContent = `Auto (Cup): ${next.DriverName} (Order ${next.Order}). You can override.`;
+    });
+  }
+
+
+  function prefillCarTrackForCup(){
+    const cupID = STATE.selectedCupID; if(cupID==="Weekly") return;
+    const driver = (new FormData(document.getElementById("raceForm")).get("driverName")) || "";
+    const entries = STATE.cupEntries.get(cupID)||[];
+    const row = entries.find(e => e.DriverName === driver) || entries[0];
+    if(!row) return;
+
+    // Car
+    els.carInput().value = row.Car || "";
+    showCarHints(STATE.cars.get(row.Car));
+    carMismatchCheck();
+
+    // Track & Circuit
+    els.trackInput().value = row.Track || "";
+    setCircuitOptions(row.Track || "");
+  }
+
+  /***** SUBMIT *****/
+  function calculatePoints(position, chances){
+    const table = {
+      1: { 1: 54, 2: 44, 3: 36, 4: 30, 5: 24 },
+      2: { 1: 27, 2: 22, 3: 18, 4: 15, 5: 12 },
+      3: { 1: 20, 2: 16, 3: 12, 4: 10, 5: 8 },
+      4: { 1: 11, 2: 8, 3: 6, 4: 4, 5: 2 },
+      5: { 1: 8, 2: 5, 3: 3, 4: 2, 5: 1 }
+    };
+    const p = parseInt(position,10), ch = parseInt(chances,10);
+    return (table[p] && table[p][ch]) ? table[p][ch] : 0;
+  }
+
+  async function submitRaceResult(e){
+    e.preventDefault();
+    const form = document.getElementById("raceForm");
+    const fd = new FormData(form);
+
+    // Required fields
+    const driverName = fd.get("driverName");
+    const carName = fd.get("carName");
+    const trackName = fd.get("trackName");
+    const circuitName = fd.get("circuitName");
+    const direction = fd.get("direction");
+    const raceLevel = fd.get("raceLevel");
+    const chances = fd.get("chances");
+    const position = fd.get("position");
+    const roundNumber = fd.get("roundNumber");
+    if(!driverName || !carName || !trackName || !circuitName || !direction || !raceLevel || !chances || !position || !roundNumber){
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    // CupID
+    const cupID = STATE.selectedCupID || "Weekly";
+    fd.append("CupID", cupID);
+
+    // Points
+    const points = calculatePoints(position, chances);
+    fd.append("points", points);
+
+    // Team
+    const team = STATE.teamByDriver.get(driverName) || "Unknown";
+    fd.append("team", team);
+
+    // Ratings
+    const driveFeel = form.querySelector('input[name="DriveFeel"]').value;
+    const handling = form.querySelector('input[name="Handling"]').value;
+    const design = form.querySelector('input[name="Design"]').value;
+    if(driveFeel) fd.append("DriveFeel", driveFeel);
+    if(handling) fd.append("Handling", handling);
+    if(design) fd.append("Design", design);
+
+    // Favourite
+    fd.append("Favourite", els.fav().checked ? "TRUE" : "FALSE");
+
+    // PP
+    const shpp = form.querySelector('#shpp').value;
+    const rhpp = form.querySelector('#rhpp').value;
+    const maxpp = form.querySelector('#maxpp').value;
+    if(shpp) fd.append("shpp", shpp);
+    if(rhpp) fd.append("rhpp", rhpp);
+    if(maxpp) fd.append("maxpp", maxpp);
+
+    // Track rating
+    const tr = form.querySelector('input[name="trackRating"]').value;
+    if(tr) fd.append("TrackRating", tr);
+
+    try{
+      await fetch(webAppUrl, { method:"POST", mode:"no-cors", body:fd });
+      alert("Race result submitted!");
+      form.reset();
+      // Reapply defaults
+      document.querySelector('#cupChips input[value="Weekly"]').checked = true;
+      STATE.selectedCupID = "Weekly";
+      els.roundNumber().value = STATE.weeklyRound || "";
+      els.laps().value = 0;
+      els.circuitSelect().innerHTML = "";
+      els.distanceHint().textContent = "";
+      els.lapsNote().textContent = "Weekly: default 0 (editable)";
+      els.raceLevelRadios().forEach(r=> r.checked=false);
+      els.driverHint().textContent = "Pick a level to auto-select a Weekly driver (lowest races → level races → lowest pts avg).";
+    }catch(err){
+      console.error(err);
+      alert("There was an error submitting the form.");
+    }
+  }
+
+  /***** INIT *****/
+  document.addEventListener("DOMContentLoaded", loadAll);
+  </script>
 </body>
 </html>
