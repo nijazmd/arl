@@ -36,7 +36,7 @@
       <div class="form-group">
         <label>Cup</label>
         <div id="cupChips" class="chip-group"></div>
-        <div class="hint muted">Default is <b>Weekly</b> (races outside cups).</div>
+        <!-- <div class="hint muted">Default is <b>Weekly</b> (races outside cups).</div> -->
       </div>
 
       <!-- RACE LEVEL (moved up, mandatory, no default) -->
@@ -56,7 +56,7 @@
           <input type="radio" name="raceLevel" value="6" id="raceLevel6">
           <label for="raceLevel6">L6</label>
         </div>
-        <div class="hint muted" id="levelHint">Weekly → choose level to auto-pick driver. Cup → defaults to L5.</div>
+        <div class="hint muted" id="levelHint">Weekly → choose level to auto-pick driver. </div>
       </fieldset>
 
       <!-- ROUND -->
@@ -322,7 +322,7 @@
         els.lapsNote().textContent = `Auto (Cup): round(${avg} / ${d}) → ${laps}`;
       }
     } else {
-      els.lapsNote().textContent = STATE.selectedCupID === "Weekly" ? "Weekly: default 0 (editable)" : "";
+      els.lapsNote().textContent = STATE.selectedCupID === "Weekly" ? "Weekly: default 0 " : "";
     }
   }
 
@@ -552,7 +552,7 @@
     els.roundNumber().value = STATE.weeklyRound || "";
     els.roundHint().textContent = STATE.weeklyRound ? `Weekly → last round: ${STATE.weeklyRound}` : "Weekly → no previous round found";
     els.laps().value = 0;
-    els.lapsNote().textContent = "Weekly: default 0 (editable)";
+    els.lapsNote().textContent = "";
     els.driverHint().textContent = "Pick a level to auto-select a Weekly driver (lowest races → level races → lowest pts avg).";
 
     // If user chooses a car manually on load, show hints
