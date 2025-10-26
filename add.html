@@ -139,7 +139,35 @@
           <input type="radio" name="position" value="0" id="p0"><label for="p0">0</label>
         </div>
       </fieldset>
-
+      <fieldset>
+        <legend>Disciplinary Points</legend>
+        <div class="chip-group">
+          <input type="radio" name="DisciplinaryPoints" value="5" id="dp5">
+          <label for="dp5">+5</label>
+          <input type="radio" name="DisciplinaryPoints" value="4" id="dp4">
+          <label for="dp4">+4</label>
+          <input type="radio" name="DisciplinaryPoints" value="3" id="dp3">
+          <label for="dp3">+3</label>
+          <input type="radio" name="DisciplinaryPoints" value="2" id="dp2">
+          <label for="dp2">+2</label>
+          <input type="radio" name="DisciplinaryPoints" value="1" id="dp1">
+          <label for="dp1">+1</label>
+          <input type="radio" name="DisciplinaryPoints" value="0" id="dp0">
+          <label for="dp0">0</label>
+          <input type="radio" name="DisciplinaryPoints" value="-1" id="dn1">
+          <label for="dn1">−1</label>
+          <input type="radio" name="DisciplinaryPoints" value="-2" id="dn2">
+          <label for="dn2">-2</label>
+          <input type="radio" name="DisciplinaryPoints" value="-3" id="dn3">
+          <label for="dn3">−3</label>
+          <input type="radio" name="DisciplinaryPoints" value="-4" id="dn4">
+          <label for="dn4">-4</label>
+          <input type="radio" name="DisciplinaryPoints" value="-5" id="dn5">
+          <label for="dn5">−5</label>
+        </div>
+        <div class="hint muted">Positive = bonus, Negative = penalty</div>
+      </fieldset>
+      
       <details>
         <summary>🚘 Rate Car & PP</summary>
         <div class="two">
@@ -756,6 +784,10 @@
     // Points
     const points = calculatePoints(position, chances);
     fd.append("points", points);
+    // Disciplinary Points
+const disciplinaryPoints = form.querySelector('input[name="DisciplinaryPoints"]:checked')?.value || "0";
+fd.append("DisciplinaryPoints", disciplinaryPoints);
+
 
     // Team
     const team = STATE.teamByDriver.get(driverName) || "Unknown";
