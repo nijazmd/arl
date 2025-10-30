@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cups</title>
   <link rel="stylesheet" href="style.css" />
-
 </head>
 <body>
   <main id="content">
@@ -13,11 +12,20 @@
 
     <div class="toolbar">
       <input id="search" class="search" type="search" placeholder="Search cups…" />
-      <div class="chips">
-        <label class="chip"><input type="checkbox" id="fltLive" checked /> <span>Live</span></label>
-        <label class="chip"><input type="checkbox" id="fltUpcoming" checked /> <span>Upcoming</span></label>
-        <label class="chip"><input type="checkbox" id="fltFinished" checked /> <span>Finished</span></label>
-      </div>
+      <div class="cup-filters">
+        <label class="cup-filter">
+          <input type="checkbox" id="filterLive" checked>
+          <span>Live</span>
+        </label>
+        <label class="cup-filter">
+          <input type="checkbox" id="filterUpcoming" checked>
+          <span>Upcoming</span>
+        </label>
+        <label class="cup-filter">
+          <input type="checkbox" id="filterFinished" checked>
+          <span>Finished</span>
+        </label>
+      </div>      
     </div>
 
     <h3 class="sectionTitle">Live</h3>
