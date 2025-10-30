@@ -5,11 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cups</title>
   <link rel="stylesheet" href="style.css" />
+
 </head>
 <body>
-  <main>
+  <main id="content">
     <h2>🏆 Cups</h2>
-    <div id="cup-list" class="card-container"></div>
+
+    <div class="toolbar">
+      <input id="search" class="search" type="search" placeholder="Search cups…" />
+      <div class="chips">
+        <label class="chip"><input type="checkbox" id="fltLive" checked /> <span>Live</span></label>
+        <label class="chip"><input type="checkbox" id="fltUpcoming" checked /> <span>Upcoming</span></label>
+        <label class="chip"><input type="checkbox" id="fltFinished" checked /> <span>Finished</span></label>
+      </div>
+    </div>
+
+    <h3 class="sectionTitle">Live</h3>
+    <div id="secLive" class="cup-grid"></div>
+
+    <h3 class="sectionTitle">Upcoming</h3>
+    <div id="secUpcoming" class="cup-grid"></div>
+
+    <h3 class="sectionTitle">Finished</h3>
+    <div id="secFinished" class="cup-grid"></div>
   </main>
 
   <nav class="bottom-nav">
