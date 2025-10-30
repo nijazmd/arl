@@ -12,20 +12,11 @@
 
     <div class="toolbar">
       <input id="search" class="search" type="search" placeholder="Search cups…" />
-      <div class="cup-filters">
-        <label class="cup-filter">
-          <input type="checkbox" id="filterLive" checked>
-          <span>Live</span>
-        </label>
-        <label class="cup-filter">
-          <input type="checkbox" id="filterUpcoming" checked>
-          <span>Upcoming</span>
-        </label>
-        <label class="cup-filter">
-          <input type="checkbox" id="filterFinished" checked>
-          <span>Finished</span>
-        </label>
-      </div>      
+      <div class="chips">
+        <label class="chip"><input type="checkbox" id="fltLive" checked /> <span>Live</span></label>
+        <label class="chip"><input type="checkbox" id="fltUpcoming" checked /> <span>Upcoming</span></label>
+        <label class="chip"><input type="checkbox" id="fltFinished" checked /> <span>Finished</span></label>
+      </div>
     </div>
 
     <h3 class="sectionTitle">Live</h3>
@@ -45,7 +36,7 @@
     <a href="cars.html">🏎️</a>
     <a href="tracks.html">🚥</a>
     <a href="rules.html">📜</a>
-    <a href="cups.html">🏆</a>
+    <a href="cups.html" class="active">🏆</a>
     <a href="add.html">➕</a>
   </nav>
 
