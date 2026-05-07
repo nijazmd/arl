@@ -498,6 +498,19 @@ async function completeRoundAndExport() {
 
     });
 
+
+    // ===== DRIVER RANKINGS =====
+    const rankedDrivers = Object.entries(driverPoints)
+      .map(([driver, points]) => ({
+        driver,
+        team: driverTeams[driver] || "Unknown",
+        avg: driverRaceCount[driver]
+          ? points / driverRaceCount[driver]
+          : 0
+      }))
+      .sort((a, b) => b.avg - a.avg);
+
+    
     // ===== TEAM STANDINGS =====
     const sortedTeams = Object.entries(teamPoints)
       .map(([team, points]) => {
@@ -518,17 +531,6 @@ async function completeRoundAndExport() {
         };
 
       })
-      .sort((a, b) => b.avg - a.avg);
-
-    // ===== DRIVER RANKINGS =====
-    const rankedDrivers = Object.entries(driverPoints)
-      .map(([driver, points]) => ({
-        driver,
-        team: driverTeams[driver] || "Unknown",
-        avg: driverRaceCount[driver]
-          ? points / driverRaceCount[driver]
-          : 0
-      }))
       .sort((a, b) => b.avg - a.avg);
 
     // ===== PREPARE EXPORT =====
