@@ -437,6 +437,26 @@ async function completeRoundAndExport() {
     const teamPoints = {};
     const teamDrivers = {};
 
+    // ===== LOAD DRIVER TEAMS =====
+    const driverResponse = await fetch(sheetURL);
+    const driverData = await driverResponse.text();
+
+    const driverRows = driverData.split("\n").slice(1);
+
+    driverRows.forEach(row => {
+      const cols = row.split(",");
+
+      const driverName =
+        cols[0]?.replace(/"/g, "").trim();
+
+      const teamName =
+        cols[1]?.replace(/"/g, "").trim();
+
+      if (driverName && teamName) {
+        driverTeams[driverName] = teamName;
+      }
+    });
+
     rows.forEach(row => {
 
       const driver = row[col("DriverName")];
@@ -482,16 +502,19 @@ async function completeRoundAndExport() {
     const sortedTeams = Object.entries(teamPoints)
       .map(([team, points]) => {
 
-        const teamRaceTotal = Object.entries(driverPoints)
-          .filter(([driver]) => driverTeams[driver] === team)
-          .reduce((sum, [driver]) => {
-            return sum + (driverRaceCount[driver] || 0);
-          }, 0);
+        const teamDriversOnly = rankedDrivers.filter(
+          d => d.team === team
+        );
+
+        const avg =
+          teamDriversOnly.length > 0
+            ? teamDriversOnly.reduce((sum, d) => sum + d.avg, 0) / teamDriversOnly.length
+            : 0;
 
         return {
           team,
           points,
-          avg: teamRaceTotal ? points / teamRaceTotal : 0
+          avg
         };
 
       })
