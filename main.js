@@ -164,7 +164,9 @@ rows.forEach(row => {
   // Only count levels 1..6
   if (!(levelNum >= 1 && levelNum <= 6)) return;
 
-  const totalPoints = (isNaN(racePoints) ? 0 : racePoints) + disciplinaryPoints;
+  const totalPoints =
+    (isNaN(racePoints) ? 0 : racePoints) + disciplinaryPoints;
+
   if (!driver || isNaN(totalPoints)) return;
 
   if (!driverPoints[driver]) {
@@ -176,8 +178,12 @@ rows.forEach(row => {
 
   driverPoints[driver] += totalPoints;
   driverRaceCount[driver] += 1;
+
   if (position === 1) driverFirsts[driver]++;
-  if (position >= 1 && position <= 3) driverPodiums[driver]++;
+
+  if (position >= 1 && position <= 3) {
+    driverPodiums[driver]++;
+  }
 });
 
 
@@ -216,6 +222,7 @@ rows.forEach(row => {
       .sort((a, b) => b[1] - a[1])
       .map(([driver, points]) => ({
         driver,
+        team: driverTeams[driver] || "Unknown",
         points,
         races: driverRaceCount[driver] || 0,
         firsts: driverFirsts[driver] || 0,
@@ -407,5 +414,130 @@ async function submitRaceResult(event) {
   } catch (err) {
     console.error("Submission failed:", err);
     alert("There was an error submitting the form.");
+  }
+}
+
+async function completeRoundAndExport() {
+  try {
+
+    // ===== LOAD DRIVER + TEAM DATA =====
+    const response = await fetch(raceResultsSheetURL);
+    const text = await response.text();
+
+    const lines = text.split("\n").map(r =>
+      r.split(",").map(c => c.replace(/"/g, "").trim())
+    );
+
+    const headers = lines[0];
+    const col = name => headers.indexOf(name);
+    const rows = lines.slice(1);
+
+    const driverPoints = {};
+    const driverRaceCount = {};
+    const teamPoints = {};
+    const teamDrivers = {};
+
+    rows.forEach(row => {
+
+      const driver = row[col("DriverName")];
+      const team = row[col("Team")];
+
+      const racePoints = parseInt(row[col("Points")], 10);
+      const disciplinaryPoints =
+        parseInt(row[col("DisciplinaryPoints")], 10) || 0;
+
+      const totalPoints =
+        (isNaN(racePoints) ? 0 : racePoints) + disciplinaryPoints;
+
+      if (!driver || !team) return;
+
+      // ===== DRIVER STATS =====
+      if (!driverPoints[driver]) {
+        driverPoints[driver] = 0;
+        driverRaceCount[driver] = 0;
+      }
+
+      driverPoints[driver] += totalPoints;
+      driverRaceCount[driver] += 1;
+
+      // ===== TEAM STATS =====
+      if (!teamPoints[team]) {
+        teamPoints[team] = 0;
+      }
+
+      teamPoints[team] += totalPoints;
+
+      // ===== TEAM DRIVER LIST =====
+      if (!teamDrivers[team]) {
+        teamDrivers[team] = [];
+      }
+
+      if (!teamDrivers[team].includes(driver)) {
+        teamDrivers[team].push(driver);
+      }
+
+    });
+
+    // ===== TEAM STANDINGS =====
+    const sortedTeams = Object.entries(teamPoints)
+      .map(([team, points]) => {
+
+        const teamRaceTotal = Object.entries(driverPoints)
+          .filter(([driver]) => driverTeams[driver] === team)
+          .reduce((sum, [driver]) => {
+            return sum + (driverRaceCount[driver] || 0);
+          }, 0);
+
+        return {
+          team,
+          points,
+          avg: teamRaceTotal ? points / teamRaceTotal : 0
+        };
+
+      })
+      .sort((a, b) => b.avg - a.avg);
+
+    // ===== DRIVER RANKINGS =====
+    const rankedDrivers = Object.entries(driverPoints)
+      .map(([driver, points]) => ({
+        driver,
+        team: driverTeams[driver] || "Unknown",
+        avg: driverRaceCount[driver]
+          ? points / driverRaceCount[driver]
+          : 0
+      }))
+      .sort((a, b) => b.avg - a.avg);
+
+    // ===== PREPARE EXPORT =====
+    const exportRows = sortedTeams.map((teamData, index) => {
+
+      const topPlayers = rankedDrivers
+        .filter(d => d.team === teamData.team)
+        .slice(0, 2);
+
+      return {
+        Team: teamData.team,
+        Position: index + 1,
+        TopPlayer1: topPlayers[0]?.driver || "",
+        TopPlayer2: topPlayers[1]?.driver || ""
+      };
+
+    });
+
+    // ===== SEND TO APPS SCRIPT =====
+    await fetch(webAppUrl, {
+      method: "POST",
+      mode: "no-cors",
+      body: new URLSearchParams({
+        mode: "exportAL",
+        data: JSON.stringify(exportRows)
+      })
+    });
+
+    alert("Round completed and exported successfully");
+
+  } catch (err) {
+    console.error(err);
+    alert("Export failed");
   }
 }
